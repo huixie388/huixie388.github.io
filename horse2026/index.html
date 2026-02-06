@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>马年祝福弹窗</title>
+<style>
+  html,body{
+    height:100%;margin:0;overflow:hidden;
+    font-family:"微软雅黑",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    perspective: 1000px;
+    background:
+      radial-gradient(1200px 600px at 50% 45%, rgba(255,255,255,.65), rgba(255,255,255,0) 60%),
+      radial-gradient(circle at 50% 45%, #fff9e6 0%, #ffe0b2 100%); /* 马年暖黄渐变背景 */
+  }
+  .stage{
+    position:relative;width:100%;height:100%;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease-out;
+  }
+  .msg{
+    position:absolute;left:50%;top:50%;
+    padding:10px 16px;border-radius:16px;
+    color:#fff;font-weight:700;
+    font-size:clamp(14px,3vmin,22px);
+    text-shadow:0 2px 8px rgba(0,0,0,.28);
+    opacity:0;
+    transform:
+      translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
+    animation: flight var(--dur) cubic-bezier(.25,.7,.3,1) var(--delay) both;
+    box-shadow:0 8px 26px rgba(0,0,0,.22), 0 0 15px rgba(255,255,255,0.6);
+    will-change: transform, opacity;
+    background: var(--bg);
+    transition: color .3s ease, text-shadow .3s ease;
+  }
+
+  @keyframes flight{
+    0%{
+      opacity:0;
+      transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
+    }
+    18%{ opacity:1; }
+    45%{
+      transform:translate(-50%,-50%) translate(calc(var(--dx)*.2),calc(var(--dy)*.2)) scale(1.06);
+    }
+    70%{
+      transform:translate(-50%,-50%) translate(calc(var(--dx)*1.15),calc(var(--dy)*1.15)) scale(.95) rotate(var(--rot));
+    }
+    88%{
+      transform:translate(-50%,-50%) translate(calc(var(--horse-x)*.6),calc(var(--horse-y)*.6)) scale(.9) rotate(var(--horse-rot));
+    }
+    100%{
+      opacity:1;
+      transform:translate(-50%,-50%) translate(var(--horse-x),var(--horse-y)) scale(1) rotate(var(--horse-rot));
+    }
+  }
+
+  /* 替换爱心为小马图标（用文字马+渐变背景实现，更适配） */
+  .msg::before{
+    content:'🐴';
+    position:absolute;left:50%;top:50%;
+    opacity:0;transition:opacity .28s ease;
+    transform:translate(-50%,-50%) scale(1.8);
+    font-size:24px;
+  }
+  .msg.horse-mode{ color:transparent; text-shadow:none; }
+  .msg.horse-mode::before{ opacity:1; }
+
+  .msg.locked{
+    animation:none;
+    transform:translate(-50%,-50%) translate(var(--horse-x),var(--horse-y)) scale(1) rotate(var(--horse-rot));
+    opacity:1;
+  }
+  .msg.locked.pulse{
+    animation:pulse 2.2s ease-in-out 1;
+  }
+  @keyframes pulse{
+    0%,100%{ transform:translate(-50%,-50%) translate(var(--horse-x),var(--horse-y)) scale(1); }
+    50%   { transform:translate(-50%,-50%) translate(var(--horse-x),var(--horse-y)) scale(1.08); }
+  }
+
+  .msg.burst{
+    animation: burst 1.4s cubic-bezier(.17,.6,.2,1) forwards;
+  }
+  
+  @keyframes burst{
+    0%{
+      opacity:1;
+      transform:translate(-50%,-50%) translate(var(--horse-x),var(--horse-y)) scale(1);
+      filter:blur(0);
+    }
+    70%{
+      opacity:.9;
+      transform:
+        translate(-50%,-50%)
+        translate(calc(var(--horse-x) + var(--bx)*0.7), calc(var(--horse-y) + var(--by)*0.7))
+        scale(1.1) rotate(var(--rot));
+      filter:blur(.3px);
+    }
+    100%{
+      opacity:0;
+      transform:
+        translate(-50%,-50%)
+        translate(calc(var(--horse-x) + var(--bx)), calc(var(--horse-y) + var(--by)))
+        scale(2.0) rotate(var(--rot));
+      filter:blur(4px);
+    }
+  }
+
+  .center-title{
+    position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    font-weight:800;letter-spacing:.12em;
+    font-size:clamp(18px,4vmin,28px);
+    color:rgba(205,127,50,.8); /* 马年金棕色 */
+    text-shadow:0 2px 10px rgba(205,127,50,.25);
+    opacity:.0; pointer-events:none;
+    animation:titleIn 1.2s ease 0.8s both;
+  }
+  @keyframes titleIn{
+    from{opacity:0; transform:translate(-50%,-55%);}
+    to  {opacity:.95; transform:translate(-50%,-50%);}
+  }
+
+  .replay{
+    position:absolute;right:18px;bottom:18px;
+    padding:10px 14px;border:none;border-radius:10px;
+    background:rgba(255,255,255,.5);
+    backdrop-filter:blur(8px);
+    color:#8B4513; /* 棕褐色 */
+    font-weight:600;cursor:pointer;
+    box-shadow:0 5px 20px rgba(0,0,0,.22);
+  }
+  
+  .petal-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .petal {
+    position: absolute;
+    top: -10vh;
+    width: 15px;
+    height: 15px;
+    background: #ffd700; /* 金花瓣替换粉花瓣 */
+    border-radius: 50%; /* 圆形金片更贴合新年 */
+    opacity: 0;
+    filter: blur(1px);
+  }
+  .petal:nth-child(odd) {
+    animation: flutter 14s linear infinite;
+  }
+  .petal:nth-child(even) {
+    animation: flutter-reverse 14s linear infinite;
+  }
+  .petal:nth-child(1) { left: 10%; animation-delay: -2s; }
+  .petal:nth-child(2) { left: 20%; animation-delay: -8s; animation-duration: 15s;}
+  .petal:nth-child(3) { left: 30%; animation-delay: -4s; animation-duration: 13s;}
+  .petal:nth-child(4) { left: 40%; animation-delay: -10s; }
+  .petal:nth-child(5) { left: 50%; animation-delay: -1s; animation-duration: 16s;}
+  .petal:nth-child(6) { left: 60%; animation-delay: -12s; }
+  .petal:nth-child(7) { left: 70%; animation-delay: -6s; animation-duration: 12s;}
+  .petal:nth-child(8) { left: 80%; animation-delay: -14s; }
+  .petal:nth-child(9) { left: 90%; animation-delay: -7s; animation-duration: 17s;}
+  .petal:nth-child(10) { left: 95%; animation-delay: -3s; }
+
+  @keyframes flutter {
+    0% { transform: translateY(-10vh) translateX(0) rotate(0deg) rotateY(0deg); opacity: 0; }
+    10% { opacity: 0.8; }
+    50% { transform: translateY(50vh) translateX(5vw) rotate(-20deg) rotateY(180deg); }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(110vh) translateX(-5vw) rotate(20deg) rotateY(360deg); opacity: 0; }
+  }
+  @keyframes flutter-reverse {
+    0% { transform: translateY(-10vh) translateX(0) rotate(0deg) rotateY(0deg); opacity: 0; }
+    10% { opacity: 0.8; }
+    50% { transform: translateY(50vh) translateX(-5vw) rotate(20deg) rotateY(-180deg); }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(110vh) translateX(5vw) rotate(-20deg) rotateY(-360deg); opacity: 0; }
+  }
+
+  .logo {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    text-align: center;
+    animation: logoBreathe 3s ease-in-out infinite;
+  }
+  .logo img {
+    width: 100px;
+    height: auto;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7)); /* 金色投影适配新年 */
+  }
+  .logo p {
+    margin: 5px 0 0 0;
+    color: #8B4513; /* 棕褐色 */
+    font-family: 'STKaiti', 'KaiTi', 'SimSun', 'serif';
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.9); /* 金色文字阴影 */
+  }
+  
+  @keyframes logoBreathe {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+</style> 
+</head>
+<body>
+  
+  <div class="petal-container">
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+    <div class="petal"></div>
+  </div>
+  
+  <audio id="background-music" src="https://lf6-cdn-tos.bytebase.com/obj/music-static/resource/audio/yunying/2024_new_year.mp3" loop playsinline autoplay>
+   您的浏览器不支持音频播放
+  </audio>
+  
+  <div class="stage" id="stage">
+    <div class="center-title" id="title">2026 马年大吉 🐴</div>
+  </div>
+  <button class="replay" id="replay">重放祝福</button>
+
+  <div class="logo">
+    <img src="TX.jpg" alt="Logo">
+    <p>宸宇</p>
+  </div>
+
+<script>
+// 替换为马年专属祝福文案
+const tips=[
+  '马年大吉，万事顺意','龙马精神，岁岁平安','一马当先，前程似锦',
+  '马到成功，财运亨通','金马贺岁，岁岁年年','策马扬鞭，大展宏图',
+  '万马奔腾，岁岁吉祥','马踏祥云，福气临门','鲜衣怒马，岁岁长安',
+  '龙马呈祥，阖家幸福','马年行大运，财源滚滚来','快马加鞭，事事顺心',
+  '金鞍耀马，福寿安康','马年纳福，四季平安','驰马迎春，岁岁无忧',
+  '马踏春风，岁岁欢喜','骏业崇隆，马年大吉','马年如意，阖家美满',
+  '策马迎春，万事兴龙','马年吉祥，步步登高','千祥云集，马年纳福',
+  '百福骈臻，马年安康','一马平川，万事顺意','马年鸿运，心想事成',
+  '骏马来财，岁岁有余','马年大吉，福寿双全','策马奔腾，万事胜意',
+  '马踏青云，前程似锦','金马送福，阖家欢乐','马年安康，岁岁年年'
+];
+const stage  = document.getElementById('stage');
+const replay = document.getElementById('replay');
+const title  = document.getElementById('title');
+const music = document.getElementById('background-music');
+
+let isHorseLocked = false;
+
+document.addEventListener('mousemove', (e) => {
+  if (!isHorseLocked) {
+    return;
+  }
+  
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const x = (e.clientX - w / 2) / w; 
+  const y = (e.clientY - h / 2) / h; 
+  
+  const tiltX = y * -12;
+  const tiltY = x * 12;
+  
+  stage.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+});
+
+const directions = [
+  {dx:'0vw',dy:'-80vh'},{dx:'0vw',dy:'80vh'},
+  {dx:'-80vw',dy:'0vh'},{dx:'80vw',dy:'0vh'},
+  {dx:'-70vw',dy:'-70vh'},{dx:'70vw',dy:'-70vh'},
+  {dx:'-70vw',dy:'70vh'},{dx:'70vw',dy:'70vh'},
+  {dx:'0vw',dy:'-60vh'},{dx:'0vw',dy:'60vh'},
+  {dx:'-60vw',dy:'0vh'},{dx:'60vw',dy:'0vh'}
+];
+function rand(min,max){return Math.random()*(max-min)+min;}
+// 调整渐变配色为马年金红/暖黄系，更贴合新年
+function randomGradient(){
+  const arr=[
+    ['#ff9500','#ff6b00'], ['#d4af37','#ffd700'],
+    ['#e67e22','#f39c12'], ['#c27ba0','#f0b27a'],
+    ['#8B4513','#ff8c00'], ['#ff6347','#ff4500'],
+    ['#gold','#ffd700'], ['#bc8f8f','#f4a460'],
+    ['#cd853f','#ffdead'], ['#daa520','#ffff00']
+  ];
+  const [c1,c2]=arr[Math.floor(Math.random()*arr.length)];
+  return `linear-gradient(135deg,${c1},${c2})`;
+}
+
+// 保留原有的心形排列轨迹（视觉效果佳），仅修改变量名适配马年
+function horseXY(t){
+  const s = 16;
+  const x = s * (16 * Math.sin(t)**3);
+  const y = -s * (13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
+  return {x: x+'px', y: y+'px'};
+}
+
+function createMsg(i,total){
+  const el = document.createElement('div');
+  el.className = 'msg';
+
+  const d = directions[Math.floor(Math.random()*directions.length)];
+  el.style.setProperty('--dx', d.dx);
+  el.style.setProperty('--dy', d.dy);
+  el.style.setProperty('--rot', rand(-55,55)+'deg');
+  el.style.setProperty('--dur', (rand(6.8,8.6))+'s');
+  el.style.setProperty('--delay', (i*0.11 + rand(0,0.35))+'s');
+  el.style.setProperty('--bg', randomGradient());
+
+  const t = (i / total) * Math.PI * 2;
+  const {x,y} = horseXY(t);
+  el.style.setProperty('--horse-x', x);
+  el.style.setProperty('--horse-y', y);
+  el.style.setProperty('--horse-rot', rand(-18,18)+'deg');
+
+  const span = document.createElement('span');
+  span.className = 'text';
+  span.textContent = tips[Math.floor(Math.random()*tips.length)];
+  el.appendChild(span);
+
+  const delay = parseFloat(el.style.getPropertyValue('--delay'));
+  const dur   = parseFloat(el.style.getPropertyValue('--dur'));
+  const switchAt = delay + dur * 0.86;
+  // 替换为马模式切换
+  const switchTimer = setTimeout(()=>{ el.classList.add('horse-mode'); }, switchAt*1000);
+
+  el.addEventListener('animationend',()=>{
+    clearTimeout(switchTimer);
+    el.classList.add('horse-mode','locked','pulse');
+
+    const spread = rand(140, 260);
+    const ang    = rand(0, Math.PI*2);
+    const bx = Math.cos(ang)*spread;
+    const by = Math.sin(ang)*spread;
+    el.style.setProperty('--bx', bx+'px');
+    el.style.setProperty('--by', by+'px');
+  }, {once:true});
+  stage.appendChild(el);
+}
+
+function finalBurst(){
+  isHorseLocked = false;
+  stage.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  
+  stage.querySelectorAll('.msg.locked').forEach(el=>{
+    el.classList.remove('pulse');
+    const jitter = rand(0, 200);
+    setTimeout(()=> el.classList.add('burst'), jitter);
+    el.addEventListener('animationend',()=> el.remove(), {once:true});
+  });
+}
+
+function play(){
+  music.play().catch(e => console.warn("Autoplay was blocked by browser."));
+  
+  isHorseLocked = false;
+  stage.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  
+  stage.querySelectorAll('.msg').forEach(n=>n.remove());
+  title.style.opacity = 0;
+
+  const TOTAL = 220;
+  for(let i=0;i<TOTAL;i++) createMsg(i,TOTAL);
+
+  setTimeout(()=>{ title.style.opacity = 1; }, 1400);
+  
+  const TOTAL_TIME_MS = (8.6 + 0.35 + 0.3 + 2.2) * 1000;
+  
+  const lockStartTime = TOTAL_TIME_MS - 2200; 
+  setTimeout(() => {
+    isHorseLocked = true; 
+  }, lockStartTime);
+  
+  setTimeout(finalBurst, TOTAL_TIME_MS);
+}
+
+// 初始化播放
+play();
+replay.onclick = play;
+</script>
+</body>
+</html>
