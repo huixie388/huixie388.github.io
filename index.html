@@ -1,396 +1,349 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>宸宇祝你天天开心</title>
-<style>
-  html,body{
-    height:100%;margin:0;overflow:hidden;
-    font-family:"微软雅黑",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    perspective: 1000px;
-    background:
-      radial-gradient(1200px 600px at 50% 45%, rgba(255,255,255,.65), rgba(255,255,255,0) 60%),
-      radial-gradient(circle at 50% 45%, #fff4f7 0%, #c9eaff 100%);
-  }
-  .stage{
-    position:relative;width:100%;height:100%;
-    transform-style: preserve-3d;
-    transition: transform 0.2s ease-out;
-  }
-  .msg{
-    position:absolute;left:50%;top:50%;
-    padding:10px 16px;border-radius:16px;
-    color:#fff;font-weight:700;
-    font-size:clamp(14px,3vmin,22px);
-    text-shadow:0 2px 8px rgba(0,0,0,.28);
-    opacity:0;
-    transform:
-      translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
-    animation: flight var(--dur) cubic-bezier(.25,.7,.3,1) var(--delay) both;
-    box-shadow:0 8px 26px rgba(0,0,0,.22), 0 0 15px rgba(255,255,255,0.6);
-    will-change: transform, opacity;
-    background: var(--bg);
-    transition: color .3s ease, text-shadow .3s ease;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宸宇的website</title>
+    <style>
+        /* 全局重置+基础配置：流畅过渡+抗锯齿 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-  @keyframes flight{
-    0%{
-      opacity:0;
-      transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
-    }
-    18%{ opacity:1; }
-    45%{
-      transform:translate(-50%,-50%) translate(calc(var(--dx)*.2),calc(var(--dy)*.2)) scale(1.06);
-    }
-    70%{
-      transform:translate(-50%,-50%) translate(calc(var(--dx)*1.15),calc(var(--dy)*1.15)) scale(.95) rotate(var(--rot));
-    }
-    88%{
-      transform:translate(-50%,-50%) translate(calc(var(--heart-x)*.6),calc(var(--heart-y)*.6)) scale(.9) rotate(var(--heart-rot));
-    }
-    100%{
-      opacity:1;
-      transform:translate(-50%,-50%) translate(var(--heart-x),var(--heart-y)) scale(1) rotate(var(--heart-rot));
-    }
-  }
+        :root {
+            /* 主题色：轻蓝 */
+            --primary: #4299e1;
+            --primary-light: rgba(66, 153, 225, 0.15);
+            --primary-shadow: rgba(66, 153, 225, 0.25);
+            --bg: linear-gradient(150deg, #f8fafc, #f1f5f9);
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.03);
+            --shadow-heavy: 0 15px 30px rgba(0, 0, 0, 0.08);
+            --shadow-primary: 0 8px 20px var(--primary-shadow);
+        }
 
-  .msg::before,.msg::after{
-    content:'';
-    position:absolute;left:50%;top:0;
-    background:inherit;border-radius:50px 50px 0 0;
-    width:22px;height:34px;opacity:0;transition:opacity .28s ease;
-    transform-origin:0 100%;transform:rotate(-45deg);
-  }
-  .msg::after{ left:0;transform-origin:100% 100%;transform:rotate(45deg); }
-  .msg.heart-mode{ color:transparent; text-shadow:none; }
-  .msg.heart-mode::before,.msg.heart-mode::after{ opacity:1; }
+        body {
+            min-height: 100vh;
+            font-family: "Inter", "微软雅黑", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            color: var(--text-main);
+        }
 
-  .msg.locked{
-    animation:none;
-    transform:translate(-50%,-50%) translate(var(--heart-x),var(--heart-y)) scale(1) rotate(var(--heart-rot));
-    opacity:1;
-  }
-  .msg.locked.pulse{
-    animation:pulse 2.2s ease-in-out 1;
-  }
-  @keyframes pulse{
-    0%,100%{ transform:translate(-50%,-50%) translate(var(--heart-x),var(--heart-y)) scale(1); }
-    50%   { transform:translate(-50%,-50%) translate(var(--heart-x),var(--heart-y)) scale(1.08); }
-  }
+        /* 时间模块 */
+        .time-box {
+            text-align: center;
+            margin-bottom: 20px;
+            pointer-events: none;
+        }
+        .time {
+            font-size: clamp(24px, 6vmin, 36px);
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px var(--primary-light);
+        }
+        .date {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 1px;
+            line-height: 1.5;
+        }
+        .lunar-date {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+        }
 
-  .msg.burst{
-    animation: burst 1.4s cubic-bezier(.17,.6,.2,1) forwards;
-  }
-  
-  @keyframes burst{
-    0%{
-      opacity:1;
-      transform:translate(-50%,-50%) translate(var(--heart-x),var(--heart-y)) scale(1);
-      filter:blur(0);
-    }
-    70%{
-      opacity:.9;
-      transform:
-        translate(-50%,-50%)
-        translate(calc(var(--heart-x) + var(--bx)*0.7), calc(var(--heart-y) + var(--by)*0.7))
-        scale(1.1) rotate(var(--rot));
-      filter:blur(.3px);
-    }
-    100%{
-      opacity:0;
-      transform:
-        translate(-50%,-50%)
-        translate(calc(var(--heart-x) + var(--bx)), calc(var(--heart-y) + var(--by)))
-        scale(2.0) rotate(var(--rot));
-      filter:blur(4px);
-    }
-  }
+        /* 标题区域 */
+        .nav-header {
+            text-align: center;
+            margin-bottom: 50px;
+            pointer-events: none;
+        }
 
-  .center-title{
-    position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-50%);
-    font-weight:800;letter-spacing:.12em;
-    font-size:clamp(18px,4vmin,28px);
-    color:rgba(255,105,180,.6);
-    text-shadow:0 2px 10px rgba(255,105,180,.15);
-    opacity:.0; pointer-events:none;
-    animation:titleIn 1.2s ease 0.8s both;
-  }
-  @keyframes titleIn{
-    from{opacity:0; transform:translate(-50%,-55%);}
-    to  {opacity:.95; transform:translate(-50%,-50%);}
-  }
+        .nav-header h1 {
+            font-size: clamp(32px, 8vmin, 48px);
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, var(--text-main), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+        }
 
-  .replay{
-    position:absolute;right:18px;bottom:18px;
-    padding:10px 14px;border:none;border-radius:10px;
-    background:rgba(255,255,255,.5);
-    backdrop-filter:blur(8px);
-    color:#222;font-weight:600;cursor:pointer;
-    box-shadow:0 5px 20px rgba(0,0,0,.22);
-  }
-  
-  .petal-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .petal {
-    position: absolute;
-    top: -10vh;
-    width: 15px;
-    height: 15px;
-    background: #ffb6c1;
-    border-radius: 1px 15px 15px;
-    opacity: 0;
-    filter: blur(1px);
-  }
-  .petal:nth-child(odd) {
-    animation: flutter 14s linear infinite;
-  }
-  .petal:nth-child(even) {
-    animation: flutter-reverse 14s linear infinite;
-  }
-  .petal:nth-child(1) { left: 10%; animation-delay: -2s; }
-  .petal:nth-child(2) { left: 20%; animation-delay: -8s; animation-duration: 15s;}
-  .petal:nth-child(3) { left: 30%; animation-delay: -4s; animation-duration: 13s;}
-  .petal:nth-child(4) { left: 40%; animation-delay: -10s; }
-  .petal:nth-child(5) { left: 50%; animation-delay: -1s; animation-duration: 16s;}
-  .petal:nth-child(6) { left: 60%; animation-delay: -12s; }
-  .petal:nth-child(7) { left: 70%; animation-delay: -6s; animation-duration: 12s;}
-  .petal:nth-child(8) { left: 80%; animation-delay: -14s; }
-  .petal:nth-child(9) { left: 90%; animation-delay: -7s; animation-duration: 17s;}
-  .petal:nth-child(10) { left: 95%; animation-delay: -3s; }
+        .nav-header p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+        }
 
-  @keyframes flutter {
-    0% { transform: translateY(-10vh) translateX(0) rotate(0deg) rotateY(0deg); opacity: 0; }
-    10% { opacity: 0.8; }
-    50% { transform: translateY(50vh) translateX(5vw) rotate(-20deg) rotateY(180deg); }
-    90% { opacity: 0.8; }
-    100% { transform: translateY(110vh) translateX(-5vw) rotate(20deg) rotateY(360deg); opacity: 0; }
-  }
-  @keyframes flutter-reverse {
-    0% { transform: translateY(-10vh) translateX(0) rotate(0deg) rotateY(0deg); opacity: 0; }
-    10% { opacity: 0.8; }
-    50% { transform: translateY(50vh) translateX(-5vw) rotate(20deg) rotateY(-180deg); }
-    90% { opacity: 0.8; }
-    100% { transform: translateY(110vh) translateX(5vw) rotate(-20deg) rotateY(-360deg); opacity: 0; }
-  }
+        /* 导航容器 */
+        .nav-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            width: 100%;
+            max-width: 950px;
+        }
 
-  .logo {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    z-index: 100;
-    text-align: center;
-    animation: logoBreathe 3s ease-in-out infinite;
-  }
-  .logo img {
-    width: 100px;
-    height: auto;
-    border-radius: 50%;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
-  }
-  .logo p {
-    margin: 5px 0 0 0;
-    color: #3935a9;
-    font-family: 'STKaiti', 'KaiTi', 'SimSun', 'serif';
-    font-weight: bold;
-    font-size: 16px;
-    text-shadow: 0 0 8px rgba(255, 182, 193, 0.9);
-  }
-  
-  @keyframes logoBreathe {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-  }
-</style> 
+        /* 卡片核心 */
+        .nav-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-light), 0 0 0 0 rgba(0, 0, 0, 0);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px) scale(1.025);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-heavy), var(--shadow-primary);
+        }
+
+        .nav-card a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            color: inherit;
+            text-decoration: none;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-icon {
+            font-size: 56px;
+            margin-bottom: 24px;
+            text-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transform: rotate(0deg);
+        }
+
+        .nav-card:hover .card-icon {
+            transform: rotate(5deg) scale(1.1);
+            color: var(--primary);
+        }
+
+        .card-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            letter-spacing: 0.3px;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.7;
+            max-width: 220px;
+        }
+
+        .nav-footer {
+            margin-top: 90px;
+            font-size: 14px;
+            color: var(--text-tertiary);
+            text-align: center;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 992px) {
+            .nav-container {
+                max-width: 700px;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 40px 16px;
+            }
+            .time {
+                font-size: clamp(20px, 5vmin, 30px);
+                letter-spacing: 1px;
+            }
+            .date {
+                font-size: 14px;
+            }
+            .lunar-date {
+                font-size: 12px;
+            }
+            .nav-header {
+                margin-bottom: 40px;
+            }
+            .nav-container {
+                gap: 20px;
+            }
+            .nav-card a {
+                padding: 32px 20px;
+            }
+            .card-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+            }
+            .nav-footer {
+                margin-top: 70px;
+            }
+            .nav-card:hover {
+                transform: translateY(-8px) scale(1.01);
+            }
+        }
+    </style>
 </head>
 <body>
-  
-  <div class="petal-container">
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-  </div>
-  
-  <audio id="background-music" src="https://lf26-music-east.douyinstatic.com/obj/ies-music-hj/7495920705440140091.mp3" loop playsinline autoplay>
-   您的浏览器不支持音频播放
-  </audio>
-  
-  <div class="stage" id="stage">
-    <div class="center-title" id="title">for you ♥</div>
-  </div>
-  <button class="replay" id="replay">重放</button>
+    <div class="time-box">
+        <div class="time" id="realTime">00:00:00</div>
+        <div class="date" id="realDate">
+            2026-01-01 星期三
+            <div class="lunar-date" id="lunarDate">乙巳年 腊月 初二 蛇年</div>
+        </div>
+    </div>
 
-  <div class="logo">
-    <img src="TX.jpg" alt="Logo">
-    <p>宸宇</p>
-  </div>
+    <div class="nav-header">
+        <h1>欢迎来到宸宇的website</h1>
+        <p>宸宇的项目集 / 一站式快速访问</p>
+    </div>
 
-<script>
-const tips=[
-  '想念在风里飘','月亮为你亮','喜欢你很久了','你是我的心动','温柔落在人间',
-  '星光都为你闪','梦里有你真好','世界因你柔软','心跳为你加速','有你真好',
-  '你是独一无二的光','遇见你是浪漫的开始','晚风也温柔了','你的笑融化星河',
-  '想陪你看星星','今夜的梦给你','宇宙都在偏爱你','你是人间的奇迹',
-  '拥抱要紧一点','想你成习惯了','一瞬也是永恒','你眼里有星星','你的温柔让我沦陷',
-  '风都是甜的','为你心动不止','想成为你的例外','心有桃花一片','你是我梦里的光',
-  '想和你看海','此刻的风想你','遇见你后时间变慢','所有浪漫都与你有关',
-  '想靠近你一点','你的名字是我心事','心软是因为你','想牵你的手看日落',
-  '每次想你星星都亮了','心跳藏不住','有你世界亮一点','甜在风里也在心里'
-];
-const stage  = document.getElementById('stage');
-const replay = document.getElementById('replay');
-const title  = document.getElementById('title');
-const music = document.getElementById('background-music');
+    <div class="nav-container">
+        <div class="nav-card">
+            <a href="horse2026">
+                <div class="card-icon">🐴</div>
+                <div class="card-name">2026马年祝福</div>
+                <div class="card-desc">动态交互新春弹窗 | 3D鼠标跟随+音乐</div>
+            </a>
+        </div>
+        <div class="nav-card">
+            <a href="https://你的用户名.github.io/birthday-card">
+                <div class="card-icon">🎂</div>
+                <div class="card-name">生日贺卡</div>
+                <div class="card-desc">专属定制生日页面 | 动态文字+背景</div>
+            </a>
+        </div>
+        <div class="nav-card">
+            <a href="love">
+                <div class="card-icon">❤️</div>
+                <div class="card-name">爱心弹窗</div>
+                <div class="card-desc">前端小工具 | 一个人想着一个人</div>
+            </a>
+        </div>
+        <div class="nav-card">
+            <a href="test.html">
+                <div class="card-icon">✨</div>
+                <div class="card-name">测试页面</div>
+                <div class="card-desc">静态页面示例 | 基础样式测试</div>
+            </a>
+        </div>
+        <!-- 新增第5个卡片 -->
+        <div class="nav-card">
+            <a href="https://你的用户名.github.io/photo-album">
+                <div class="card-icon">📸</div>
+                <div class="card-name">相册集</div>
+                <div class="card-desc">个人照片展示 | 动态相册</div>
+            </a>
+        </div>
+        <!-- 新增第6个卡片 -->
+        <div class="nav-card">
+            <a href="https://你的用户名.github.io/todo-list">
+                <div class="card-icon">📝</div>
+                <div class="card-name">待办清单</div>
+                <div class="card-desc">个人任务管理 | 实时同步</div>
+            </a>
+        </div>
+    </div>
 
-let isHeartLocked = false;
+    <div class="nav-footer">
+        © 2026 宸宇的website | 要天天开心哦
+    </div>
 
-document.addEventListener('mousemove', (e) => {
-  if (!isHeartLocked) {
-    return;
-  }
-  
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const x = (e.clientX - w / 2) / w; 
-  const y = (e.clientY - h / 2) / h; 
-  
-  const tiltX = y * -12;
-  const tiltY = x * 12;
-  
-  stage.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-});
+    <script>
+        const timeEl = document.getElementById('realTime');
+        const dateEl = document.getElementById('realDate');
+        const lunarEl = document.getElementById('lunarDate');
 
-const directions = [
-  {dx:'0vw',dy:'-80vh'},{dx:'0vw',dy:'80vh'},
-  {dx:'-80vw',dy:'0vh'},{dx:'80vw',dy:'0vh'},
-  {dx:'-70vw',dy:'-70vh'},{dx:'70vw',dy:'-70vh'},
-  {dx:'-70vw',dy:'70vh'},{dx:'70vw',dy:'70vh'},
-  {dx:'0vw',dy:'-60vh'},{dx:'0vw',dy:'60vh'},
-  {dx:'-60vw',dy:'0vh'},{dx:'60vw',dy:'0vh'}
-];
-function rand(min,max){return Math.random()*(max-min)+min;}
-function randomGradient(){
-  const arr=[
-    ['#ff758c','#ff7eb3'], ['#a18cd1','#fbc2eb'],
-    ['#f6d365','#fda085'], ['#84fab0','#8fd3f4'],
-    ['#f093fb','#f5576c'], ['#4facfe','#00f2fe'],
-    ['#43e97b','#38f9d7'], ['#fa709a','#fee140'],
-    ['#30cfd0','#330867'], ['#5ee7df','#b490ca']
-  ];
-  const [c1,c2]=arr[Math.floor(Math.random()*arr.length)];
-  return `linear-gradient(135deg,${c1},${c2})`;
-}
+        const formatNum = (num) => num.toString().padStart(2, '0');
 
-function heartXY(t){
-  const s = 16;
-  const x = s * (16 * Math.sin(t)**3);
-  const y = -s * (13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
-  return {x: x+'px', y: y+'px'};
-}
+        const getWeek = (n) => {
+            const weekList = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            return weekList[n];
+        };
 
-function createMsg(i,total){
-  const el = document.createElement('div');
-  el.className = 'msg';
+        // 2026年公历-农历精准映射表（只保留2026年1-2月，确保准确）
+        const solarLunarMap = {
+            "2026-02-06": {
+                lunarYear: "乙巳",
+                lunarMonth: "腊月",
+                lunarDay: "十九",
+                animal: "蛇"
+            },
+            "2026-02-07": {
+                lunarYear: "乙巳",
+                lunarMonth: "腊月",
+                lunarDay: "二十",
+                animal: "蛇"
+            },
+            "2026-02-17": {
+                lunarYear: "丙午",
+                lunarMonth: "正月",
+                lunarDay: "初一",
+                animal: "马"
+            },
+            // 可按需补充更多日期
+        };
 
-  const d = directions[Math.floor(Math.random()*directions.length)];
-  el.style.setProperty('--dx', d.dx);
-  el.style.setProperty('--dy', d.dy);
-  el.style.setProperty('--rot', rand(-55,55)+'deg');
-  el.style.setProperty('--dur', (rand(6.8,8.6))+'s');
-  el.style.setProperty('--delay', (i*0.11 + rand(0,0.35))+'s');
-  el.style.setProperty('--bg', randomGradient());
+        // 自动获取当前日期的农历信息
+        const getLunarInfo = (dateStr) => {
+            // 如果映射表中有当前日期，直接返回；否则默认显示正确的腊月信息
+            return solarLunarMap[dateStr] || {
+                lunarYear: "乙巳",
+                lunarMonth: "腊月",
+                lunarDay: "十九",
+                animal: "蛇"
+            };
+        };
 
-  const t = (i / total) * Math.PI * 2;
-  const {x,y} = heartXY(t);
-  el.style.setProperty('--heart-x', x);
-  el.style.setProperty('--heart-y', y);
-  el.style.setProperty('--heart-rot', rand(-18,18)+'deg');
+        const updateTime = () => {
+            const now = new Date();
+            const time = `${formatNum(now.getHours())}:${formatNum(now.getMinutes())}:${formatNum(now.getSeconds())}`;
+            const solarDateStr = `${now.getFullYear()}-${formatNum(now.getMonth() + 1)}-${formatNum(now.getDate())}`;
+            const solarDate = `${solarDateStr} ${getWeek(now.getDay())}`;
+            
+            // 获取精准农历信息
+            const lunarInfo = getLunarInfo(solarDateStr);
+            const lunarDate = `${lunarInfo.lunarYear}年 ${lunarInfo.lunarMonth} ${lunarInfo.lunarDay} ${lunarInfo.animal}年`;
 
-  const span = document.createElement('span');
-  span.className = 'text';
-  span.textContent = tips[Math.floor(Math.random()*tips.length)];
-  el.appendChild(span);
+            timeEl.innerText = time;
+            dateEl.firstChild.textContent = solarDate;
+            lunarEl.innerText = lunarDate;
+        };
 
-  const delay = parseFloat(el.style.getPropertyValue('--delay'));
-  const dur   = parseFloat(el.style.getPropertyValue('--dur'));
-  const switchAt = delay + dur * 0.86;
-  const switchTimer = setTimeout(()=>{ el.classList.add('heart-mode'); }, switchAt*1000);
-
-  el.addEventListener('animationend',()=>{
-    clearTimeout(switchTimer);
-    el.classList.add('heart-mode','locked','pulse');
-
-    const spread = rand(140, 260);
-    const ang    = rand(0, Math.PI*2);
-    const bx = Math.cos(ang)*spread;
-    const by = Math.sin(ang)*spread;
-    el.style.setProperty('--bx', bx+'px');
-    el.style.setProperty('--by', by+'px');
-  }, {once:true});
-  stage.appendChild(el);
-}
-
-function finalBurst(){
-  isHeartLocked = false;
-  stage.style.transform = 'rotateX(0deg) rotateY(0deg)';
-  
-  stage.querySelectorAll('.msg.locked').forEach(el=>{
-    el.classList.remove('pulse');
-    const jitter = rand(0, 200);
-    setTimeout(()=> el.classList.add('burst'), jitter);
-    el.addEventListener('animationend',()=> el.remove(), {once:true});
-  });
-}
-
-function play(){
-  music.play().catch(e => console.warn("Autoplay was blocked by browser."));
-  
-  isHeartLocked = false;
-  stage.style.transform = 'rotateX(0deg) rotateY(0deg)';
-  
-  stage.querySelectorAll('.msg').forEach(n=>n.remove());
-  title.style.opacity = 0;
-
-  const TOTAL = 220;
-  for(let i=0;i<TOTAL;i++) createMsg(i,TOTAL);
-
-  setTimeout(()=>{ title.style.opacity = 1; }, 1400);
-  
-  const TOTAL_TIME_MS = (8.6 + 0.35 + 0.3 + 2.2) * 1000;
-  
-  const lockStartTime = TOTAL_TIME_MS - 2200; 
-  setTimeout(() => {
-    isHeartLocked = true; 
-  }, lockStartTime);
-  
-  setTimeout(finalBurst, TOTAL_TIME_MS);
-}
-
-// 初始化
-play();
-replay.onclick = play;
-</script>
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
-
 </html>
-
