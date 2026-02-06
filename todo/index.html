@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 页面标题，和导航卡片名称一致，比如“生日贺卡”“相册集” -->
+    <title>生日贺卡 - 宸宇的website</title>
+    <style>
+        /* 全局样式，和导航页风格统一 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", Inter, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(150deg, #f8fafc, #f1f5f9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #1e293b;
+        }
+        /* 提示图标 */
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #4299e1; /* 和导航页主色一致 */
+        }
+        /* 提示标题 */
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        /* 提示描述 */
+        .desc {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        /* 返回导航页按钮，样式适配 */
+        .back-btn {
+            padding: 10px 20px;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 提示图标，可根据页面修改：📅🎂📸📝✨❤️等 -->
+    <div class="icon">🎂</div>
+    <!-- 提示标题，和子页面名称一致 -->
+    <div class="title">前面的区域以后再来探索吧</div>
+    <!-- 提示描述 -->
+    <div class="desc">该页面正在精心设计中，敬请期待～</div>
+    <!-- 返回导航页按钮，点击直接回到根目录导航页 -->
+    <a href="../" class="back-btn">← 回到宸宇的导航页</a>
+</body>
+</html>
