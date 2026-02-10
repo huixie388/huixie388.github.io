@@ -2,21 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>宸宇的website</title>
     <style>
-        /* 全局重置+基础配置：流畅过渡+抗锯齿 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
+        /* 全局样式 - 统一主题 */
         :root {
-            /* 主题色：轻蓝 */
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
             --primary-shadow: rgba(66, 153, 225, 0.25);
@@ -25,10 +15,19 @@
             --card-border: #e2e8f0;
             --text-main: #1e293b;
             --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
             --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.03);
             --shadow-heavy: 0 15px 30px rgba(0, 0, 0, 0.08);
             --shadow-primary: 0 8px 20px var(--primary-shadow);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -41,6 +40,7 @@
             justify-content: center;
             padding: 50px 20px;
             color: var(--text-main);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* 时间模块 */
@@ -57,13 +57,12 @@
             text-shadow: 0 2px 8px var(--primary-light);
         }
         .date {
-            font-size: 16px;
+            font-size: clamp(14px, 3vmin, 16px);
             color: var(--text-secondary);
             margin-top: 8px;
             letter-spacing: 1px;
             line-height: 1.5;
         }
-        /* 移除阴历时间的样式（原lunar-date相关样式删除） */
 
         /* 标题区域 */
         .nav-header {
@@ -71,7 +70,6 @@
             margin-bottom: 50px;
             pointer-events: none;
         }
-
         .nav-header h1 {
             font-size: clamp(32px, 8vmin, 48px);
             font-weight: 700;
@@ -82,9 +80,8 @@
             color: transparent;
             text-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
         }
-
         .nav-header p {
-            font-size: 17px;
+            font-size: clamp(14px, 3vmin, 17px);
             color: var(--text-secondary);
             line-height: 1.6;
             letter-spacing: 0.5px;
@@ -99,7 +96,7 @@
             max-width: 950px;
         }
 
-        /* 卡片核心 */
+        /* 卡片核心 - 统一风格 */
         .nav-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -110,13 +107,11 @@
             position: relative;
             backdrop-filter: blur(10px);
         }
-
-        .nav-card:hover {
+        .nav-card:hover, .nav-card:active {
             transform: translateY(-10px) scale(1.025);
             border-color: var(--primary);
             box-shadow: var(--shadow-heavy), var(--shadow-primary);
         }
-
         .nav-card a {
             display: flex;
             flex-direction: column;
@@ -130,29 +125,25 @@
             position: relative;
             z-index: 2;
         }
-
         .card-icon {
-            font-size: 56px;
+            font-size: clamp(48px, 10vmin, 56px);
             margin-bottom: 24px;
             text-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
             transform: rotate(0deg);
         }
-
-        .nav-card:hover .card-icon {
+        .nav-card:hover .card-icon, .nav-card:active .card-icon {
             transform: rotate(5deg) scale(1.1);
             color: var(--primary);
         }
-
         .card-name {
-            font-size: 20px;
+            font-size: clamp(18px, 4vmin, 20px);
             font-weight: 600;
             margin-bottom: 10px;
             color: var(--text-main);
             letter-spacing: 0.3px;
         }
-
         .card-desc {
-            font-size: 14px;
+            font-size: clamp(12px, 3vmin, 14px);
             font-weight: 400;
             color: var(--text-secondary);
             text-align: center;
@@ -162,33 +153,17 @@
 
         .nav-footer {
             margin-top: 90px;
-            font-size: 14px;
-            color: var(--text-tertiary);
+            font-size: clamp(12px, 3vmin, 14px);
+            color: var(--text-secondary);
             text-align: center;
             pointer-events: none;
             letter-spacing: 0.5px;
         }
 
-        @media (max-width: 992px) {
-            .nav-container {
-                max-width: 700px;
-                gap: 24px;
-            }
-        }
-
+        /* 移动端适配 */
         @media (max-width: 768px) {
             body {
                 padding: 40px 16px;
-            }
-            .time {
-                font-size: clamp(20px, 5vmin, 30px);
-                letter-spacing: 1px;
-            }
-            .date {
-                font-size: 14px;
-            }
-            .nav-header {
-                margin-bottom: 40px;
             }
             .nav-container {
                 gap: 20px;
@@ -196,15 +171,11 @@
             .nav-card a {
                 padding: 32px 20px;
             }
-            .card-icon {
-                font-size: 48px;
-                margin-bottom: 20px;
+            .nav-card:hover, .nav-card:active {
+                transform: translateY(-8px) scale(1.01);
             }
             .nav-footer {
                 margin-top: 70px;
-            }
-            .nav-card:hover {
-                transform: translateY(-8px) scale(1.01);
             }
         }
     </style>
@@ -212,10 +183,7 @@
 <body>
     <div class="time-box">
         <div class="time" id="realTime">00:00:00</div>
-        <div class="date" id="realDate">
-            2026-01-01 星期三
-            <!-- 移除阴历时间的DOM元素 -->
-        </div>
+        <div class="date" id="realDate">2026-01-01 星期三</div>
     </div>
 
     <div class="nav-header">
@@ -252,7 +220,6 @@
                 <div class="card-desc">静态页面示例 | 基础样式测试</div>
             </a>
         </div>
-        <!-- 新增第5个卡片 -->
         <div class="nav-card">
             <a href="album">
                 <div class="card-icon">📸</div>
@@ -260,7 +227,6 @@
                 <div class="card-desc">个人照片展示 | 动态相册</div>
             </a>
         </div>
-        <!-- 新增第6个卡片 -->
         <div class="nav-card">
             <a href="todo">
                 <div class="card-icon">📝</div>
@@ -277,27 +243,21 @@
     <script>
         const timeEl = document.getElementById('realTime');
         const dateEl = document.getElementById('realDate');
-        // 移除阴历时间的DOM元素引用
 
         const formatNum = (num) => num.toString().padStart(2, '0');
-
         const getWeek = (n) => {
             const weekList = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             return weekList[n];
         };
-
-        // 移除所有阴历相关的映射表和逻辑
 
         const updateTime = () => {
             const now = new Date();
             const time = `${formatNum(now.getHours())}:${formatNum(now.getMinutes())}:${formatNum(now.getSeconds())}`;
             const solarDateStr = `${now.getFullYear()}-${formatNum(now.getMonth() + 1)}-${formatNum(now.getDate())}`;
             const solarDate = `${solarDateStr} ${getWeek(now.getDay())}`;
-            
-            // 移除阴历信息的获取和设置逻辑
 
             timeEl.innerText = time;
-            dateEl.textContent = solarDate; // 直接设置公历日期，不再操作firstChild
+            dateEl.textContent = solarDate;
         };
 
         updateTime();
