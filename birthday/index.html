@@ -2,33 +2,49 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 修复：优化移动端视口配置 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>生日贺卡</title>
+    <title>生日贺卡 | 宸宇的website</title>
     <style>
+        /* 全局样式 - 统一主题 */
+        :root {
+            --primary: #ff6b81;
+            --primary-light: rgba(255, 107, 129, 0.15);
+            --primary-shadow: rgba(255, 107, 129, 0.25);
+            --bg: linear-gradient(135deg, #fef7fb, #fff5f7, #ffe5ec);
+            --card-bg: #ffffff;
+            --card-border: #f0e6ea;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.03);
+            --shadow-heavy: 0 15px 30px rgba(0, 0, 0, 0.08);
+            --shadow-primary: 0 8px 20px var(--primary-shadow);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: "微软雅黑", sans-serif;
             text-decoration: none !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #fef7fb, #fff5f7, #ffe5ec);
+            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            /* 修复：移动端取消overflow:hidden，避免内容截断 */
             overflow-x: hidden;
             overflow-y: auto;
             position: relative;
-            /* 修复：适配手机安全区 */
             padding-bottom: env(safe-area-inset-bottom);
         }
 
+        /* 彩屑效果 */
         .confetti {
             position: absolute;
             opacity: 0;
@@ -43,18 +59,19 @@
             clip-path: polygon(50% 0%,61%35%,98%35%,68%57%,79%91%,50%70%,21%91%,32%57%,2%35%,39%35%);
         }
 
+        /* 贺卡主体 - 统一风格 */
         .card {
-            background: white;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             border-radius: 24px;
-            padding: 45px 35px;
-            box-shadow: 0 15px 35px rgba(255,107,129,0.12);
+            box-shadow: var(--shadow-light), var(--shadow-primary);
             text-align: center;
             z-index: 10;
             max-width: 520px;
             width: 100%;
-            position: relative; /* 修复：移动端取消absolute定位，避免错位 */
-            /* 修复：适配小屏幕手机 */
+            position: relative;
             margin: 20px auto;
+            padding: clamp(30px, 8vmin, 45px) clamp(20px, 6vmin, 35px);
         }
 
         .cake-box {
@@ -64,91 +81,90 @@
             margin-bottom: 25px;
         }
         .cake {
-            font-size: clamp(60px, 20vw, 90px); /* 修复：响应式字体大小 */
+            font-size: clamp(60px, 20vw, 90px);
             animation: floatCake 3.5s infinite ease-in-out;
+            color: var(--primary);
         }
 
         .title {
-            font-size: clamp(24px, 8vw, 36px); /* 修复：响应式字体大小 */
+            font-size: clamp(24px, 8vmin, 36px);
             margin-bottom: 15px;
-            position: static !important;
-        }
-        .title::after {
-            display: none !important;
+            color: var(--text-main);
+            background: linear-gradient(90deg, var(--text-main), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .wish-text {
-            font-size: clamp(16px, 5vw, 20px); /* 修复：响应式字体大小 */
+            font-size: clamp(16px, 5vmin, 20px);
             line-height: 1.8;
-            color: #555;
+            color: var(--text-secondary);
             margin: 20px 0;
         }
 
+        /* 返回按钮 - 统一风格 */
         .back {
             display: inline-block;
             padding: 14px 32px;
-            background: linear-gradient(90deg,#ff6b81,#ff4757);
+            background: linear-gradient(90deg,var(--primary), #ff4757);
             color: white;
             border-radius: 16px;
             text-decoration: none;
             margin-top: 20px;
             transition: all 0.3s ease;
-            /* 修复：适配手机点击 */
-            -webkit-tap-highlight-color: transparent;
+            box-shadow: var(--shadow-light);
         }
-        .back:hover, .back:active { /* 修复：添加移动端点击态 */
+        .back:hover, .back:active {
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(255,107,129,0.2);
+            box-shadow: var(--shadow-heavy), var(--shadow-primary);
         }
 
-        /* ========== 核心修改：文字框整体放大 + 移动端适配 ========== */
+        /* 愿望卡片 - 统一风格 */
         .float-box {
             position: absolute;
             padding: 18px 28px;
             background: rgba(255,255,255,0.92);
             border-radius: 16px;
-            font-size: clamp(16px, 4vw, 20px); /* 修复：响应式字体 */
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: 600;
             z-index: 2;
             white-space: nowrap;
-            box-shadow: 0 6px 16px rgba(255,107,129,0.15);
-            /* 修复：适配手机点击 */
+            box-shadow: var(--shadow-light), var(--primary-shadow);
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             transition: all 0.4s ease;
             border: 3px solid;
-            animation: none !important;
-            min-width: clamp(120px, 30vw, 160px); /* 修复：响应式最小宽度 */
+            min-width: clamp(120px, 30vw, 160px);
         }
-
-        .float-box:hover, .float-box:active { /* 修复：添加移动端点击态 */
+        .float-box:hover, .float-box:active {
             transform: scale(1.08);
+            box-shadow: var(--shadow-heavy), var(--primary-shadow);
         }
-
         .float-box.active {
             padding: 28px 40px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            box-shadow: var(--shadow-heavy), var(--primary-shadow);
             z-index: 20;
             transform: scale(1.25);
-            min-width: clamp(180px, 40vw, 240px); /* 修复：响应式最小宽度 */
+            min-width: clamp(180px, 40vw, 240px);
             white-space: normal;
             text-align: center;
             border-radius: 20px;
             color: #FFFFFF !important;
             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-
         .float-box .title {
-            font-size: clamp(18px, 4.5vw, 22px); /* 修复：响应式字体 */
+            font-size: clamp(18px, 4.5vw, 22px);
             font-weight: 700;
             margin-bottom: 10px;
             color: inherit;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
         }
-
         .float-box .msg {
             display: none;
-            font-size: clamp(16px, 4vw, 20px); /* 修复：响应式字体 */
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: 800;
             line-height: 1.7;
             opacity: 1;
@@ -156,11 +172,11 @@
             color: #FFFFFF !important;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
-
         .float-box.active .msg {
             display: block;
         }
 
+        /* 动画 */
         @keyframes floatCake {
             0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}
         }
@@ -168,15 +184,13 @@
             0%{transform:translateY(-10px);opacity:0}10%{opacity:1}100%{transform:translateY(100vh);opacity:0}
         }
 
-        /* 修复：移动端优化动画性能 */
+        /* 移动端优化 */
         @media (max-width: 768px) {
             .float-box {
-                /* 手机端降低动画复杂度 */
                 transition: all 0.2s ease;
             }
             .confetti {
-                /* 手机端减少彩屑数量 */
-                display: none; /* 可选：如果手机卡顿，可注释掉这行恢复彩屑 */
+                display: none; /* 手机端关闭彩屑避免卡顿，需要的话注释掉 */
             }
         }
     </style>
@@ -192,7 +206,6 @@
         </div>
         <h1 class="title">生日快乐</h1>
         <p class="wish-text">愿所有美好如约而至<br>平安喜乐 万事胜意</p>
-        <!-- 修复：返回路径改为绝对路径，适配手机 -->
         <a href="https://huixie388.github.io/" class="back">← 返回首页</a>
     </div>
 
@@ -234,7 +247,6 @@
                 this.el.style.color = data.color;
                 this.el.style.borderColor = data.color;
 
-                // 初始位置适配大尺寸文字框，避开贺卡中心
                 do {
                     this.x = Math.random() * (canvasWidth - 300) + 150;
                     this.y = Math.random() * (canvasHeight - 300) + 150;
@@ -248,10 +260,9 @@
                 this.width = 0;
                 this.height = 0;
 
-                // 修复：适配移动端触摸事件
                 this.el.addEventListener('click', () => this.toggleActive());
                 this.el.addEventListener('touchstart', (e) => {
-                    e.preventDefault(); // 阻止默认触摸行为
+                    e.preventDefault();
                     this.toggleActive();
                 });
 
@@ -260,7 +271,6 @@
                 this.updatePosition();
             }
 
-            // 修复：提取激活逻辑，方便复用
             toggleActive() {
                 this.el.classList.toggle("active");
                 if (this.el.classList.contains('active')) {
@@ -358,7 +368,6 @@
         }
 
         function darkenColor(color, percent) {
-            // 修复：兼容无#的颜色值
             color = color.startsWith('#') ? color : '#' + color;
             const num = parseInt(color.replace("#",""),16);
             const amt = Math.round(2.55 * percent);
@@ -373,7 +382,6 @@
             cardBounds = {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height};
         }
 
-        // 修复：等待页面加载完成再初始化
         window.addEventListener('load', () => {
             initCardBounds();
             wishes.forEach((item,i) => boxes.push(new WishBox(item,i)));
@@ -385,7 +393,6 @@
             }
             animate();
 
-            // 修复：移动端降低彩屑生成频率，减少卡顿
             const confettiInterval = window.innerWidth < 768 ? 500 : 180;
             setInterval(()=>{
                 const c = document.createElement("div");
