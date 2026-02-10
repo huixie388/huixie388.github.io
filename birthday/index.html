@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 修复：优化移动端视口配置 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>生日贺卡</title>
     <style>
         * {
@@ -20,8 +21,12 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow: hidden;
+            /* 修复：移动端取消overflow:hidden，避免内容截断 */
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
+            /* 修复：适配手机安全区 */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .confetti {
@@ -47,10 +52,9 @@
             z-index: 10;
             max-width: 520px;
             width: 100%;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
+            position: relative; /* 修复：移动端取消absolute定位，避免错位 */
+            /* 修复：适配小屏幕手机 */
+            margin: 20px auto;
         }
 
         .cake-box {
@@ -60,12 +64,12 @@
             margin-bottom: 25px;
         }
         .cake {
-            font-size: 90px;
+            font-size: clamp(60px, 20vw, 90px); /* 修复：响应式字体大小 */
             animation: floatCake 3.5s infinite ease-in-out;
         }
 
         .title {
-            font-size: 36px;
+            font-size: clamp(24px, 8vw, 36px); /* 修复：响应式字体大小 */
             margin-bottom: 15px;
             position: static !important;
         }
@@ -74,7 +78,7 @@
         }
 
         .wish-text {
-            font-size: 20px;
+            font-size: clamp(16px, 5vw, 20px); /* 修复：响应式字体大小 */
             line-height: 1.8;
             color: #555;
             margin: 20px 0;
@@ -89,62 +93,62 @@
             text-decoration: none;
             margin-top: 20px;
             transition: all 0.3s ease;
+            /* 修复：适配手机点击 */
+            -webkit-tap-highlight-color: transparent;
         }
-        .back:hover {
+        .back:hover, .back:active { /* 修复：添加移动端点击态 */
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(255,107,129,0.2);
         }
 
-        /* ========== 核心修改：文字框整体放大 ========== */
+        /* ========== 核心修改：文字框整体放大 + 移动端适配 ========== */
         .float-box {
             position: absolute;
-            /* 初始尺寸放大：内边距从10px 16px → 18px 28px */
             padding: 18px 28px;
             background: rgba(255,255,255,0.92);
-            border-radius: 16px; /* 圆角同步放大 */
-            font-size: 20px; /* 文字从16px → 20px */
+            border-radius: 16px;
+            font-size: clamp(16px, 4vw, 20px); /* 修复：响应式字体 */
             font-weight: 600;
             z-index: 2;
             white-space: nowrap;
             box-shadow: 0 6px 16px rgba(255,107,129,0.15);
+            /* 修复：适配手机点击 */
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
             transition: all 0.4s ease;
-            border: 3px solid; /* 边框从2px → 3px，更醒目 */
+            border: 3px solid;
             animation: none !important;
-            min-width: 160px; /* 最小宽度从100px → 160px */
+            min-width: clamp(120px, 30vw, 160px); /* 修复：响应式最小宽度 */
         }
 
-        .float-box:hover {
-            transform: scale(1.08); /* 悬浮放大稍调大，更明显 */
+        .float-box:hover, .float-box:active { /* 修复：添加移动端点击态 */
+            transform: scale(1.08);
         }
 
-        /* 展开后的尺寸同步放大 */
         .float-box.active {
-            /* 展开内边距从20px 28px → 28px 40px */
             padding: 28px 40px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.25);
             z-index: 20;
-            transform: scale(1.25); /* 展开放大稍调大 */
-            min-width: 240px; /* 展开最小宽度从180px → 240px */
+            transform: scale(1.25);
+            min-width: clamp(180px, 40vw, 240px); /* 修复：响应式最小宽度 */
             white-space: normal;
             text-align: center;
-            border-radius: 20px; /* 展开圆角同步放大 */
+            border-radius: 20px;
             color: #FFFFFF !important;
             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
-        /* 愿望标题文字放大 */
         .float-box .title {
-            font-size: 22px; /* 从18px → 22px */
+            font-size: clamp(18px, 4.5vw, 22px); /* 修复：响应式字体 */
             font-weight: 700;
             margin-bottom: 10px;
             color: inherit;
         }
 
-        /* 祝福文字放大 */
         .float-box .msg {
             display: none;
-            font-size: 20px; /* 从17px → 20px */
+            font-size: clamp(16px, 4vw, 20px); /* 修复：响应式字体 */
             font-weight: 800;
             line-height: 1.7;
             opacity: 1;
@@ -163,6 +167,18 @@
         @keyframes fall {
             0%{transform:translateY(-10px);opacity:0}10%{opacity:1}100%{transform:translateY(100vh);opacity:0}
         }
+
+        /* 修复：移动端优化动画性能 */
+        @media (max-width: 768px) {
+            .float-box {
+                /* 手机端降低动画复杂度 */
+                transition: all 0.2s ease;
+            }
+            .confetti {
+                /* 手机端减少彩屑数量 */
+                display: none; /* 可选：如果手机卡顿，可注释掉这行恢复彩屑 */
+            }
+        }
     </style>
 </head>
 
@@ -176,7 +192,8 @@
         </div>
         <h1 class="title">生日快乐</h1>
         <p class="wish-text">愿所有美好如约而至<br>平安喜乐 万事胜意</p>
-        <a href="../" class="back">← 返回首页</a>
+        <!-- 修复：返回路径改为绝对路径，适配手机 -->
+        <a href="https://huixie388.github.io/" class="back">← 返回首页</a>
     </div>
 
     <script>
@@ -200,8 +217,8 @@
 
         const wishArea = document.getElementById("wishArea");
         const boxes = [];
-        const canvasWidth = window.innerWidth;
-        const canvasHeight = window.innerHeight;
+        let canvasWidth = window.innerWidth;
+        let canvasHeight = window.innerHeight;
         const bounce = 0.8;
         const mainCard = document.getElementById("mainCard");
         let cardBounds = {};
@@ -226,25 +243,32 @@
                     Math.abs(this.y - canvasHeight/2) < cardBounds.height/2
                 );
 
-                this.vx = (Math.random() - 0.5) * 0.7; // 速度稍降，大尺寸移动更稳
+                this.vx = (Math.random() - 0.5) * 0.7;
                 this.vy = (Math.random() - 0.5) * 0.7;
                 this.width = 0;
                 this.height = 0;
 
-                this.el.onclick = () => {
-                    this.el.classList.toggle("active");
-                    if (this.el.classList.contains('active')) {
-                        this.el.style.background = `linear-gradient(90deg, ${darkenColor(data.color, 15)}, ${data.color})`;
-                    } else {
-                        this.el.style.background = "rgba(255,255,255,0.92)";
-                        this.el.style.color = data.color;
-                    }
-                    setTimeout(() => this.updateSize(), 100);
-                };
+                // 修复：适配移动端触摸事件
+                this.el.addEventListener('click', () => this.toggleActive());
+                this.el.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // 阻止默认触摸行为
+                    this.toggleActive();
+                });
 
                 wishArea.appendChild(this.el);
                 setTimeout(() => this.updateSize(), 0);
                 this.updatePosition();
+            }
+
+            // 修复：提取激活逻辑，方便复用
+            toggleActive() {
+                this.el.classList.toggle("active");
+                if (this.el.classList.contains('active')) {
+                    this.el.style.background = `linear-gradient(90deg, ${darkenColor(this.el.style.color, 15)}, ${this.el.style.color})`;
+                } else {
+                    this.el.style.background = "rgba(255,255,255,0.92)";
+                }
+                setTimeout(() => this.updateSize(), 100);
             }
 
             updateSize() {
@@ -334,6 +358,8 @@
         }
 
         function darkenColor(color, percent) {
+            // 修复：兼容无#的颜色值
+            color = color.startsWith('#') ? color : '#' + color;
             const num = parseInt(color.replace("#",""),16);
             const amt = Math.round(2.55 * percent);
             const R = Math.max(0, (num >> 16) - amt);
@@ -347,27 +373,34 @@
             cardBounds = {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height};
         }
 
-        initCardBounds();
-        wishes.forEach((item,i) => boxes.push(new WishBox(item,i)));
+        // 修复：等待页面加载完成再初始化
+        window.addEventListener('load', () => {
+            initCardBounds();
+            wishes.forEach((item,i) => boxes.push(new WishBox(item,i)));
 
-        function animate(){
-            boxes.forEach(b => b.update());
-            for(let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++) boxes[i].checkCollision(boxes[j]);
-            requestAnimationFrame(animate);
-        }
-        animate();
+            function animate(){
+                boxes.forEach(b => b.update());
+                for(let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++) boxes[i].checkCollision(boxes[j]);
+                requestAnimationFrame(animate);
+            }
+            animate();
 
-        setInterval(()=>{
-            const c = document.createElement("div");
-            c.className = "confetti " + (Math.random()>.5?"circle":"star");
-            c.style.left = Math.random()*100 + "vw";
-            c.style.backgroundColor = ["#ff6b81","#f97316","#8b5cf6"][Math.floor(Math.random()*3)];
-            c.style.animationDuration = Math.random()*4+4 + "s";
-            confetti.appendChild(c);
-            setTimeout(()=>c.remove(), 5000);
-        }, 180);
+            // 修复：移动端降低彩屑生成频率，减少卡顿
+            const confettiInterval = window.innerWidth < 768 ? 500 : 180;
+            setInterval(()=>{
+                const c = document.createElement("div");
+                c.className = "confetti " + (Math.random()>.5?"circle":"star");
+                c.style.left = Math.random()*100 + "vw";
+                c.style.backgroundColor = ["#ff6b81","#f97316","#8b5cf6"][Math.floor(Math.random()*3)];
+                c.style.animationDuration = Math.random()*4+4 + "s";
+                confetti.appendChild(c);
+                setTimeout(()=>c.remove(), 5000);
+            }, confettiInterval);
+        });
 
         window.addEventListener("resize", () => {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
             initCardBounds();
             boxes.forEach(b=>{
                 do{
