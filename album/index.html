@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>相册集 | 宸宇的website</title>
     <style>
-        /* 全局样式 - 统一主题 */
         :root {
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
@@ -15,8 +14,8 @@
             --card-border: #e2e8f0;
             --text-main: #1e293b;
             --text-secondary: #64748b;
-            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.03);
-            --shadow-heavy: 0 15px 30px rgba(0, 0, 0, 0.08);
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.03);
+            --shadow-heavy: 0 15px 30px rgba(0,0,0,0.08);
             --shadow-primary: 0 8px 20px var(--primary-shadow);
         }
 
@@ -29,19 +28,26 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            scroll-behavior: smooth; /* 平滑滚动 */
+        }
+
         body {
             min-height: 100vh;
             font-family: "微软雅黑", sans-serif;
             background: var(--bg);
             padding: clamp(20px, 5vmin, 40px);
             padding-bottom: env(safe-area-inset-bottom);
+            overflow-x: hidden;
         }
 
-        /* 标题 - 统一风格 */
+        /* 头部优化 */
         .album-header {
             text-align: center;
-            margin-bottom: clamp(20px, 6vmin, 40px);
+            margin-bottom: clamp(40px, 8vmin, 60px);
+            padding: 0 20px;
         }
+
         .album-header h1 {
             font-size: clamp(28px, 8vmin, 40px);
             font-weight: 700;
@@ -50,48 +56,350 @@
             background-clip: text;
             color: transparent;
             margin-bottom: 10px;
+            line-height: 1.2;
         }
+
         .album-header p {
             font-size: clamp(14px, 3vmin, 16px);
             color: var(--text-secondary);
+            line-height: 1.5;
         }
 
-        /* 相册容器 - 统一风格 */
-        .album-container {
-            max-width: 1200px;
+        /* 分组样式优化 - 标题美化 */
+        .album-group {
+            max-width: 1000px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+        }
+
+        .album-group h2 {
+            font-size: clamp(18px, 5vmin, 24px);
+            color: var(--text-main);
+            margin-bottom: 30px;
+            padding-left: 20px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .album-group h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .album-group h2 span {
+            font-size: clamp(20px, 6vmin, 28px);
+        }
+
+        /* 抽屉容器优化：自适应照片尺寸 */
+        .drawer-container {
+            position: relative;
+            height: clamp(300px, 60vw, 500px); /* 自适应高度 */
+            max-width: 800px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 25vw, 200px), 1fr));
-            gap: clamp(10px, 3vmin, 15px);
+            padding-bottom: 40px;
+            padding: 0 20px;
         }
 
-        /* 照片卡片 - 统一风格 */
-        .album-item {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: clamp(8px, 2vmin, 12px);
+        /* 抽屉照片核心：统一所有照片大小 + 层次优化 */
+        .drawer-item {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            /* 统一所有照片的尺寸 */
+            width: clamp(200px, 60vw, 500px);
+            height: 100%; /* 占满容器高度，保证所有照片大小一致 */
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow-light);
-            transition: all 0.4s ease;
-            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+            /* 基础样式：增加透明层次 */
+            opacity: 0.9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            /* 取消裁剪，让所有照片完整显示 */
+            clip-path: none;
         }
-        .album-item:hover, .album-item:active {
-            transform: translateY(-8px) scale(1.03);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-heavy), var(--shadow-primary);
+
+        /* 6张照片的偏移规则：仅用微小位移区分层次（大小完全一致） */
+        .drawer-item:nth-child(1) { z-index: 6; opacity: 1; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .drawer-item:nth-child(2) { z-index: 5; left: calc(50% - 8px); top: 5px; box-shadow: 0 7px 18px rgba(0,0,0,0.13); }
+        .drawer-item:nth-child(3) { z-index: 4; left: calc(50% - 16px); top: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.11); }
+        .drawer-item:nth-child(4) { z-index: 3; left: calc(50% - 24px); top: 15px; box-shadow: 0 5px 14px rgba(0,0,0,0.09); }
+        .drawer-item:nth-child(5) { z-index: 2; left: calc(50% - 32px); top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
+        .drawer-item:nth-child(6) { z-index: 1; left: calc(50% - 40px); top: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+
+        /* 悬停效果优化 */
+        .drawer-item:hover {
+            transform: translateX(-50%) scale(1.03);
+            box-shadow: var(--shadow-primary);
+            z-index: 10;
+            opacity: 1;
         }
-        .album-item img {
+
+        /* 核心：保留照片原始尺寸 + 加载动画 */
+        .drawer-item .img-wrapper {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            display: block;
+            position: relative;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 返回按钮 - 统一风格 */
+        .drawer-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 保持比例填充 */
+            display: block;
+            /* 淡入动画 */
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        /* 图片加载失败兜底样式（修复版） */
+        .drawer-item .img-wrapper::after {
+            content: attr(data-alt);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .drawer-item img[src*="picsum.photos"] + .img-wrapper::after,
+        .drawer-item img.error + .img-wrapper::after {
+            opacity: 1;
+        }
+
+        /* 不同照片依次加载，提升视觉流畅度 */
+        .drawer-item:nth-child(1) img { animation-delay: 0.1s; }
+        .drawer-item:nth-child(2) img { animation-delay: 0.2s; }
+        .drawer-item:nth-child(3) img { animation-delay: 0.3s; }
+        .drawer-item:nth-child(4) img { animation-delay: 0.4s; }
+        .drawer-item:nth-child(5) img { animation-delay: 0.5s; }
+        .drawer-item:nth-child(6) img { animation-delay: 0.6s; }
+
+        /* 加载中动画 */
+        @keyframes skeleton {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .drawer-item .img-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: skeleton 1.5s infinite;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .drawer-item img:not([src*="picsum.photos"]):not(.loaded) + .img-wrapper::before {
+            opacity: 1;
+        }
+
+        /* 淡入动画关键帧 */
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* 预览弹窗优化 - 增加过渡动画 */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+            /* 弹窗过渡动画 */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .preview-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .preview-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            height: 80vh;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            /* 弹窗内容淡入 */
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .preview-modal.active .preview-content {
+            transform: scale(1);
+        }
+
+        .preview-slider {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease;
+        }
+
+        .preview-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+        }
+
+        .preview-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background-size: 200% 100%;
+            animation: skeleton 1.5s infinite;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .preview-slide img:not(.loaded)::before {
+            opacity: 1;
+        }
+
+        .preview-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* 预览时完整显示原始照片 */
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* 按钮样式优化 */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            font-size: 24px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+
+        .nav-btn:disabled:hover {
+            transform: translateY(-50%);
+        }
+
+        .prev-btn {
+            left: -25px;
+        }
+
+        .next-btn {
+            right: -25px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .close-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: white;
+        }
+
+        .photo-index {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+        }
+
         .back-btn {
             display: block;
             width: fit-content;
-            margin: clamp(30px, 8vmin, 50px) auto 0;
+            margin: 40px auto 0;
             padding: 12px 28px;
             background: linear-gradient(90deg, var(--primary), #38bdf8);
             color: white;
@@ -101,32 +409,429 @@
             box-shadow: var(--shadow-light);
             transition: all 0.3s ease;
         }
-        .back-btn:hover, .back-btn:active {
+
+        .back-btn:hover,
+        .back-btn:active {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-heavy), var(--primary-shadow);
+            box-shadow: var(--shadow-heavy), var(--shadow-primary);
+        }
+
+        /* 移动端适配：保持大小一致，调整偏移 */
+        @media (max-width: 768px) {
+            .drawer-container {
+                height: clamp(250px, 70vw, 400px);
+            }
+            
+            .drawer-item {
+                width: clamp(150px, 70vw, 300px);
+            }
+            
+            /* 移动端偏移更紧凑（大小仍一致） */
+            .drawer-item:nth-child(2) { left: calc(50% - 6px); top: 4px; }
+            .drawer-item:nth-child(3) { left: calc(50% - 12px); top: 8px; }
+            .drawer-item:nth-child(4) { left: calc(50% - 18px); top: 12px; }
+            .drawer-item:nth-child(5) { left: calc(50% - 24px); top: 16px; }
+            .drawer-item:nth-child(6) { left: calc(50% - 30px); top: 20px; }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            
+            .prev-btn { left: 0; }
+            .next-btn { right: 0; }
+            
+            .close-btn {
+                top: 0;
+                right: 0;
+                z-index: 11;
+            }
+
+            .photo-index {
+                bottom: 10px;
+                font-size: 14px;
+                padding: 3px 10px;
+            }
+        }
+
+        /* 加载完成标记 */
+        .loaded {
+            opacity: 1 !important;
         }
     </style>
 </head>
 <body>
     <div class="album-header">
         <h1>我的相册集</h1>
-        <p>记录美好瞬间 | 手机/电脑都能看</p>
+        <p>抽屉式相册 | 点击照片抽出查看</p>
     </div>
 
-    <div class="album-container">
-        <!-- 照片1 - 绝对路径确保能显示 -->
-        <div class="album-item">
-            <img src="https://huixie388.github.io/photo/b0cd4a8c3c22b525e8abb60d6ab833a9.jpg" alt="美好瞬间">
+    <!-- 南京 -->
+    <div class="album-group">
+        <h2><span>🏯</span> 南京·秦淮河</h2>
+        <div class="drawer-container" data-group="nanjing">
+            <div class="drawer-item" data-index="0">
+                <div class="img-wrapper" data-alt="南京-1">
+                    <img src="https://huixie388.github.io/photo/01.jpg" alt="南京-1" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=1'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="1">
+                <div class="img-wrapper" data-alt="南京-2">
+                    <img src="https://huixie388.github.io/photo/02.jpg" alt="南京-2" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=2'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="2">
+                <div class="img-wrapper" data-alt="南京-3">
+                    <img src="https://huixie388.github.io/photo/03.jpg" alt="南京-3" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=3'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="3">
+                <div class="img-wrapper" data-alt="南京-4">
+                    <img src="https://huixie388.github.io/photo/04.jpg" alt="南京-4" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=4'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="4">
+                <div class="img-wrapper" data-alt="南京-5">
+                    <img src="https://huixie388.github.io/photo/05.jpg" alt="南京-5" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=5'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="5">
+                <div class="img-wrapper" data-alt="南京-6">
+                    <img src="https://huixie388.github.io/photo/06.jpg" alt="南京-6" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=6'">
+                </div>
+            </div>
         </div>
-        <!-- 新增照片模板 - 复制下面这段替换文件名即可 -->
-        <!--
-        <div class="album-item">
-            <img src="https://huixie388.github.io/photo/你的照片文件名.jpg" alt="照片描述">
-        </div>
-        -->
     </div>
 
-    <!-- 返回首页按钮 - 统一风格 -->
+    <!-- 杭州 -->
+    <div class="album-group">
+        <h2><span>🌿</span> 杭州·西湖</h2>
+        <div class="drawer-container" data-group="hangzhou">
+            <div class="drawer-item" data-index="0">
+                <div class="img-wrapper" data-alt="杭州-1">
+                    <img src="https://huixie388.github.io/photo/11.jpg" alt="杭州-1" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=7'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="1">
+                <div class="img-wrapper" data-alt="杭州-2">
+                    <img src="https://huixie388.github.io/photo/12.jpg" alt="杭州-2" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=8'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="2">
+                <div class="img-wrapper" data-alt="杭州-3">
+                    <img src="https://huixie388.github.io/photo/13.jpg" alt="杭州-3" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=9'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="3">
+                <div class="img-wrapper" data-alt="杭州-4">
+                    <img src="https://huixie388.github.io/photo/14.jpg" alt="杭州-4" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=10'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="4">
+                <div class="img-wrapper" data-alt="杭州-5">
+                    <img src="https://huixie388.github.io/photo/15.jpg" alt="杭州-5" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=11'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="5">
+                <div class="img-wrapper" data-alt="杭州-6">
+                    <img src="https://huixie388.github.io/photo/16.jpg" alt="杭州-6" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=12'">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重庆 -->
+    <div class="album-group">
+        <h2><span>🌉</span> 重庆·洪崖洞</h2>
+        <div class="drawer-container" data-group="chongqing">
+            <div class="drawer-item" data-index="0">
+                <div class="img-wrapper" data-alt="重庆-1">
+                    <img src="https://huixie388.github.io/photo/21.jpg" alt="重庆-1" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=13'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="1">
+                <div class="img-wrapper" data-alt="重庆-2">
+                    <img src="https://huixie388.github.io/photo/22.jpg" alt="重庆-2" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=14'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="2">
+                <div class="img-wrapper" data-alt="重庆-3">
+                    <img src="https://huixie388.github.io/photo/23.jpg" alt="重庆-3" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=15'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="3">
+                <div class="img-wrapper" data-alt="重庆-4">
+                    <img src="https://huixie388.github.io/photo/24.jpg" alt="重庆-4" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=16'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="4">
+                <div class="img-wrapper" data-alt="重庆-5">
+                    <img src="https://huixie388.github.io/photo/25.jpg" alt="重庆-5" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=17'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="5">
+                <div class="img-wrapper" data-alt="重庆-6">
+                    <img src="https://huixie388.github.io/photo/26.jpg" alt="重庆-6" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=18'">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 赛里木湖 -->
+    <div class="album-group">
+        <h2><span>💧</span> 赛里木湖</h2>
+        <div class="drawer-container" data-group="sailimu">
+            <div class="drawer-item" data-index="0">
+                <div class="img-wrapper" data-alt="赛里木湖-1">
+                    <img src="https://huixie388.github.io/photo/31.jpg" alt="赛里木湖-1" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=19'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="1">
+                <div class="img-wrapper" data-alt="赛里木湖-2">
+                    <img src="https://huixie388.github.io/photo/32.jpg" alt="赛里木湖-2" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=20'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="2">
+                <div class="img-wrapper" data-alt="赛里木湖-3">
+                    <img src="https://huixie388.github.io/photo/33.jpg" alt="赛里木湖-3" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=21'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="3">
+                <div class="img-wrapper" data-alt="赛里木湖-4">
+                    <img src="https://huixie388.github.io/photo/34.jpg" alt="赛里木湖-4" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=22'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="4">
+                <div class="img-wrapper" data-alt="赛里木湖-5">
+                    <img src="https://huixie388.github.io/photo/35.jpg" alt="赛里木湖-5" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=23'">
+                </div>
+            </div>
+            <div class="drawer-item" data-index="5">
+                <div class="img-wrapper" data-alt="赛里木湖-6">
+                    <img src="https://huixie388.github.io/photo/36.jpg" alt="赛里木湖-6" onload="this.classList.add('loaded')" onerror="this.classList.add('error'); this.src='https://picsum.photos/800/450?random=24'">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览弹窗 -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-slider" id="previewSlider"></div>
+            <button class="nav-btn prev-btn" id="prevBtn">◀</button>
+            <button class="nav-btn next-btn" id="nextBtn">▶</button>
+            <button class="close-btn" id="closeBtn">×</button>
+            <div class="photo-index" id="photoIndex">1/1</div>
+        </div>
+    </div>
+
     <a href="https://huixie388.github.io/" class="back-btn">← 返回首页</a>
+
+    <script>
+        // 照片数据
+        const photoGroups = {
+            nanjing: [
+                { url: "https://huixie388.github.io/photo/01.jpg", alt: "南京-1" },
+                { url: "https://huixie388.github.io/photo/02.jpg", alt: "南京-2" },
+                { url: "https://huixie388.github.io/photo/03.jpg", alt: "南京-3" },
+                { url: "https://huixie388.github.io/photo/04.jpg", alt: "南京-4" },
+                { url: "https://huixie388.github.io/photo/05.jpg", alt: "南京-5" },
+                { url: "https://huixie388.github.io/photo/06.jpg", alt: "南京-6" }
+            ],
+            hangzhou: [
+                { url: "https://huixie388.github.io/photo/11.jpg", alt: "杭州-1" },
+                { url: "https://huixie388.github.io/photo/12.jpg", alt: "杭州-2" },
+                { url: "https://huixie388.github.io/photo/13.jpg", alt: "杭州-3" },
+                { url: "https://huixie388.github.io/photo/14.jpg", alt: "杭州-4" },
+                { url: "https://huixie388.github.io/photo/15.jpg", alt: "杭州-5" },
+                { url: "https://huixie388.github.io/photo/16.jpg", alt: "杭州-6" }
+            ],
+            chongqing: [
+                { url: "https://huixie388.github.io/photo/21.jpg", alt: "重庆-1" },
+                { url: "https://huixie388.github.io/photo/22.jpg", alt: "重庆-2" },
+                { url: "https://huixie388.github.io/photo/23.jpg", alt: "重庆-3" },
+                { url: "https://huixie388.github.io/photo/24.jpg", alt: "重庆-4" },
+                { url: "https://huixie388.github.io/photo/25.jpg", alt: "重庆-5" },
+                { url: "https://huixie388.github.io/photo/26.jpg", alt: "重庆-6" }
+            ],
+            sailimu: [
+                { url: "https://huixie388.github.io/photo/31.jpg", alt: "赛里木湖-1" },
+                { url: "https://huixie388.github.io/photo/32.jpg", alt: "赛里木湖-2" },
+                { url: "https://huixie388.github.io/photo/33.jpg", alt: "赛里木湖-3" },
+                { url: "https://huixie388.github.io/photo/34.jpg", alt: "赛里木湖-4" },
+                { url: "https://huixie388.github.io/photo/35.jpg", alt: "赛里木湖-5" },
+                { url: "https://huixie388.github.io/photo/36.jpg", alt: "赛里木湖-6" }
+            ]
+        };
+
+        // 全局变量
+        let currentGroup = '';
+        let currentIndex = 0;
+        let photos = [];
+
+        // DOM元素
+        const previewModal = document.getElementById('previewModal');
+        const previewSlider = document.getElementById('previewSlider');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const photoIndex = document.getElementById('photoIndex');
+
+        // 更新按钮状态
+        function updateButtonStates() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === photos.length - 1;
+        }
+
+        // 照片点击事件
+        document.querySelectorAll('.drawer-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const container = this.closest('.drawer-container');
+                currentGroup = container.dataset.group;
+                currentIndex = parseInt(this.dataset.index);
+                photos = photoGroups[currentGroup];
+                
+                renderPreviewSlider();
+                previewModal.classList.add('active');
+                updateIndexDisplay();
+                updateButtonStates();
+            });
+        });
+
+        // 渲染预览滑块
+        function renderPreviewSlider() {
+            previewSlider.innerHTML = '';
+            photos.forEach((photo, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'preview-slide';
+                
+                // 创建图片元素，增加加载和错误处理
+                const img = document.createElement('img');
+                img.src = photo.url;
+                img.alt = photo.alt;
+                img.onload = function() {
+                    this.classList.add('loaded');
+                };
+                img.onerror = function() {
+                    this.src = `https://picsum.photos/1200/800?random=${idx+25}`;
+                    this.classList.add('loaded');
+                };
+                
+                slide.appendChild(img);
+                previewSlider.appendChild(slide);
+            });
+            previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        // 更新索引
+        function updateIndexDisplay() {
+            photoIndex.textContent = `${currentIndex + 1}/${photos.length}`;
+        }
+
+        // 上一张
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            }
+        });
+
+        // 下一张
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < photos.length - 1) {
+                currentIndex++;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            }
+        });
+
+        // 关闭弹窗
+        closeBtn.addEventListener('click', () => {
+            previewModal.classList.remove('active');
+        });
+
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) previewModal.classList.remove('active');
+        });
+
+        // 移动端滑动
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let isDragging = false;
+        
+        previewSlider.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            isDragging = true;
+        }, false);
+        
+        previewSlider.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            touchEndX = e.changedTouches[0].screenX;
+        }, false);
+        
+        previewSlider.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            touchEndX = e.changedTouches[0].screenX;
+            const swipeThreshold = 50;
+            
+            if (touchEndX < touchStartX - swipeThreshold && currentIndex < photos.length - 1) {
+                currentIndex++;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            }
+            if (touchEndX > touchStartX + swipeThreshold && currentIndex > 0) {
+                currentIndex--;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            }
+        }, false);
+
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (!previewModal.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') {
+                previewModal.classList.remove('active');
+            } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                currentIndex--;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            } else if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) {
+                currentIndex++;
+                previewSlider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndexDisplay();
+                updateButtonStates();
+            }
+        });
+
+        // 阻止弹窗内的事件冒泡
+        document.querySelector('.preview-content').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            console.log('相册页面加载完成');
+            // 预加载图片提升体验
+            Object.values(photoGroups).forEach(group => {
+                group.forEach(photo => {
+                    const img = new Image();
+                    img.src = photo.url;
+                    img.onerror = () => {
+                        console.log(`图片加载失败: ${photo.url}`);
+                    };
+                });
+            });
+        });
+    </script>
 </body>
 </html>
