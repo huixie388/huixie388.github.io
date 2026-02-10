@@ -63,11 +63,7 @@
             letter-spacing: 1px;
             line-height: 1.5;
         }
-        .lunar-date {
-            font-size: 14px;
-            color: var(--text-tertiary);
-            letter-spacing: 0.5px;
-        }
+        /* 移除阴历时间的样式（原lunar-date相关样式删除） */
 
         /* 标题区域 */
         .nav-header {
@@ -191,9 +187,6 @@
             .date {
                 font-size: 14px;
             }
-            .lunar-date {
-                font-size: 12px;
-            }
             .nav-header {
                 margin-bottom: 40px;
             }
@@ -221,7 +214,7 @@
         <div class="time" id="realTime">00:00:00</div>
         <div class="date" id="realDate">
             2026-01-01 星期三
-            <div class="lunar-date" id="lunarDate">乙巳年 腊月 初二 蛇年</div>
+            <!-- 移除阴历时间的DOM元素 -->
         </div>
     </div>
 
@@ -284,7 +277,7 @@
     <script>
         const timeEl = document.getElementById('realTime');
         const dateEl = document.getElementById('realDate');
-        const lunarEl = document.getElementById('lunarDate');
+        // 移除阴历时间的DOM元素引用
 
         const formatNum = (num) => num.toString().padStart(2, '0');
 
@@ -293,39 +286,7 @@
             return weekList[n];
         };
 
-        // 2026年公历-农历精准映射表（只保留2026年1-2月，确保准确）
-        const solarLunarMap = {
-            "2026-02-06": {
-                lunarYear: "乙巳",
-                lunarMonth: "腊月",
-                lunarDay: "十九",
-                animal: "蛇"
-            },
-            "2026-02-07": {
-                lunarYear: "乙巳",
-                lunarMonth: "腊月",
-                lunarDay: "二十",
-                animal: "蛇"
-            },
-            "2026-02-17": {
-                lunarYear: "丙午",
-                lunarMonth: "正月",
-                lunarDay: "初一",
-                animal: "马"
-            },
-            // 可按需补充更多日期
-        };
-
-        // 自动获取当前日期的农历信息
-        const getLunarInfo = (dateStr) => {
-            // 如果映射表中有当前日期，直接返回；否则默认显示正确的腊月信息
-            return solarLunarMap[dateStr] || {
-                lunarYear: "乙巳",
-                lunarMonth: "腊月",
-                lunarDay: "十九",
-                animal: "蛇"
-            };
-        };
+        // 移除所有阴历相关的映射表和逻辑
 
         const updateTime = () => {
             const now = new Date();
@@ -333,13 +294,10 @@
             const solarDateStr = `${now.getFullYear()}-${formatNum(now.getMonth() + 1)}-${formatNum(now.getDate())}`;
             const solarDate = `${solarDateStr} ${getWeek(now.getDay())}`;
             
-            // 获取精准农历信息
-            const lunarInfo = getLunarInfo(solarDateStr);
-            const lunarDate = `${lunarInfo.lunarYear}年 ${lunarInfo.lunarMonth} ${lunarInfo.lunarDay} ${lunarInfo.animal}年`;
+            // 移除阴历信息的获取和设置逻辑
 
             timeEl.innerText = time;
-            dateEl.firstChild.textContent = solarDate;
-            lunarEl.innerText = lunarDate;
+            dateEl.textContent = solarDate; // 直接设置公历日期，不再操作firstChild
         };
 
         updateTime();
@@ -347,6 +305,3 @@
     </script>
 </body>
 </html>
-
-
-
