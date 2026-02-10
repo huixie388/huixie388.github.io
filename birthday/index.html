@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>生日贺卡 | 宸宇的website</title>
     <style>
-        /* 全局样式 - 统一主题 */
         :root {
             --primary: #ff6b81;
             --primary-light: rgba(255, 107, 129, 0.15);
@@ -35,6 +34,7 @@
             min-height: 100vh;
             background: var(--bg);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -44,7 +44,6 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* 彩屑效果 */
         .confetti {
             position: absolute;
             opacity: 0;
@@ -59,7 +58,6 @@
             clip-path: polygon(50% 0%,61%35%,98%35%,68%57%,79%91%,50%70%,21%91%,32%57%,2%35%,39%35%);
         }
 
-        /* 贺卡主体 - 统一风格 */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -103,7 +101,6 @@
             margin: 20px 0;
         }
 
-        /* 返回按钮 - 统一风格 */
         .back {
             display: inline-block;
             padding: 14px 32px;
@@ -120,43 +117,43 @@
             box-shadow: var(--shadow-heavy), var(--shadow-primary);
         }
 
-        /* 愿望卡片 - 统一风格 */
+        /* 愿望卡片 - 手机端也保留，但尺寸和位置更合理 */
         .float-box {
             position: absolute;
-            padding: 18px 28px;
+            padding: 12px 18px;
             background: rgba(255,255,255,0.92);
-            border-radius: 16px;
-            font-size: clamp(16px, 4vw, 20px);
+            border-radius: 12px;
+            font-size: clamp(14px, 3vw, 18px);
             font-weight: 600;
             z-index: 2;
             white-space: nowrap;
             box-shadow: var(--shadow-light), var(--primary-shadow);
             cursor: pointer;
             touch-action: manipulation;
-            transition: all 0.4s ease;
-            border: 3px solid;
-            min-width: clamp(120px, 30vw, 160px);
+            transition: all 0.3s ease;
+            border: 2px solid;
+            min-width: clamp(80px, 20vw, 120px);
         }
         .float-box:hover, .float-box:active {
-            transform: scale(1.08);
+            transform: scale(1.05);
             box-shadow: var(--shadow-heavy), var(--primary-shadow);
         }
         .float-box.active {
-            padding: 28px 40px;
+            padding: 20px 28px;
             box-shadow: var(--shadow-heavy), var(--primary-shadow);
             z-index: 20;
-            transform: scale(1.25);
-            min-width: clamp(180px, 40vw, 240px);
+            transform: scale(1.15);
+            min-width: clamp(140px, 30vw, 180px);
             white-space: normal;
             text-align: center;
-            border-radius: 20px;
+            border-radius: 16px;
             color: #FFFFFF !important;
             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         .float-box .title {
-            font-size: clamp(18px, 4.5vw, 22px);
+            font-size: clamp(16px, 3.5vw, 20px);
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: inherit;
             background: none;
             -webkit-background-clip: unset;
@@ -164,9 +161,9 @@
         }
         .float-box .msg {
             display: none;
-            font-size: clamp(16px, 4vw, 20px);
+            font-size: clamp(14px, 3vw, 18px);
             font-weight: 800;
-            line-height: 1.7;
+            line-height: 1.6;
             opacity: 1;
             letter-spacing: 0.5px;
             color: #FFFFFF !important;
@@ -176,22 +173,11 @@
             display: block;
         }
 
-        /* 动画 */
         @keyframes floatCake {
             0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}
         }
         @keyframes fall {
             0%{transform:translateY(-10px);opacity:0}10%{opacity:1}100%{transform:translateY(100vh);opacity:0}
-        }
-
-        /* 移动端优化 */
-        @media (max-width: 768px) {
-            .float-box {
-                transition: all 0.2s ease;
-            }
-            .confetti {
-                display: none; /* 手机端关闭彩屑避免卡顿，需要的话注释掉 */
-            }
         }
     </style>
 </head>
@@ -247,16 +233,17 @@
                 this.el.style.color = data.color;
                 this.el.style.borderColor = data.color;
 
+                // 手机端调整初始位置，避免遮挡返回按钮
                 do {
-                    this.x = Math.random() * (canvasWidth - 300) + 150;
-                    this.y = Math.random() * (canvasHeight - 300) + 150;
+                    this.x = Math.random() * (canvasWidth - 200) + 100;
+                    this.y = Math.random() * (canvasHeight - 250) + 100;
                 } while (
                     Math.abs(this.x - canvasWidth/2) < cardBounds.width/2 &&
                     Math.abs(this.y - canvasHeight/2) < cardBounds.height/2
                 );
 
-                this.vx = (Math.random() - 0.5) * 0.7;
-                this.vy = (Math.random() - 0.5) * 0.7;
+                this.vx = (Math.random() - 0.5) * 0.5; // 手机端降低速度，更流畅
+                this.vy = (Math.random() - 0.5) * 0.5;
                 this.width = 0;
                 this.height = 0;
 
@@ -411,8 +398,8 @@
             initCardBounds();
             boxes.forEach(b=>{
                 do{
-                    b.x = Math.random()*(canvasWidth-300)+150;
-                    b.y = Math.random()*(canvasHeight-300)+150;
+                    b.x = Math.random()*(canvasWidth-200)+100;
+                    b.y = Math.random()*(canvasHeight-250)+100;
                 }while(Math.abs(b.x-canvasWidth/2)<cardBounds.width/2 && Math.abs(b.y-canvasHeight/2)<cardBounds.height/2);
                 b.updatePosition();
             });
