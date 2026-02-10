@@ -2,102 +2,381 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>页面建设中 - 宸宇的website</title>
-    <!-- 保持和导航页一致的字体/风格 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日贺卡</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "微软雅黑", Inter, system-ui, sans-serif;
-            -webkit-font-smoothing: antialiased;
+            font-family: "微软雅黑", sans-serif;
+            text-decoration: none !important;
         }
 
         body {
             min-height: 100vh;
-            /* 和导航页同款渐变背景 */
-            background: linear-gradient(150deg, #f8fafc, #f1f5f9);
+            background: linear-gradient(135deg, #fef7fb, #fff5f7, #ffe5ec);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* 装饰图标 */
-        .icon {
-            font-size: 72px;
-            color: #4299e1; /* 导航页主色 */
-            margin-bottom: 24px;
-            opacity: 0.8;
+        .confetti {
+            position: absolute;
+            opacity: 0;
+            animation: fall linear infinite;
+            z-index: 1;
+        }
+        .confetti.circle {
+            width: 12px; height: 12px; border-radius: 50%;
+        }
+        .confetti.star {
+            width: 14px; height: 14px;
+            clip-path: polygon(50% 0%,61%35%,98%35%,68%57%,79%91%,50%70%,21%91%,32%57%,2%35%,39%35%);
         }
 
-        /* 提示标题 */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 45px 35px;
+            box-shadow: 0 15px 35px rgba(255,107,129,0.12);
+            text-align: center;
+            z-index: 10;
+            max-width: 520px;
+            width: 100%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .cake-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .cake {
+            font-size: 90px;
+            animation: floatCake 3.5s infinite ease-in-out;
+        }
+
         .title {
-            font-size: 28px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 12px;
-            text-align: center;
+            font-size: 36px;
+            margin-bottom: 15px;
+            position: static !important;
+        }
+        .title::after {
+            display: none !important;
         }
 
-        /* 提示描述 */
-        .desc {
-            font-size: 16px;
-            color: #64748b;
-            text-align: center;
-            line-height: 1.6;
-            margin-bottom: 40px;
-            max-width: 300px;
+        .wish-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #555;
+            margin: 20px 0;
         }
 
-        /* 返回按钮（和导航页卡片hover风格一致） */
-        .back-btn {
-            padding: 12px 28px;
-            background-color: #4299e1;
+        .back {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(90deg,#ff6b81,#ff4757);
             color: white;
+            border-radius: 16px;
             text-decoration: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
+            margin-top: 20px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
         }
-
-        .back-btn:hover {
-            background-color: #3b82f6;
+        .back:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(66, 153, 225, 0.3);
+            box-shadow: 0 6px 18px rgba(255,107,129,0.2);
         }
 
-        /* 手机端适配 */
-        @media (max-width: 480px) {
-            .icon {
-                font-size: 60px;
-            }
-            .title {
-                font-size: 24px;
-            }
-            .desc {
-                font-size: 14px;
-            }
-            .back-btn {
-                padding: 10px 24px;
-                font-size: 15px;
-            }
+        /* ========== 核心修改：文字框整体放大 ========== */
+        .float-box {
+            position: absolute;
+            /* 初始尺寸放大：内边距从10px 16px → 18px 28px */
+            padding: 18px 28px;
+            background: rgba(255,255,255,0.92);
+            border-radius: 16px; /* 圆角同步放大 */
+            font-size: 20px; /* 文字从16px → 20px */
+            font-weight: 600;
+            z-index: 2;
+            white-space: nowrap;
+            box-shadow: 0 6px 16px rgba(255,107,129,0.15);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 3px solid; /* 边框从2px → 3px，更醒目 */
+            animation: none !important;
+            min-width: 160px; /* 最小宽度从100px → 160px */
+        }
+
+        .float-box:hover {
+            transform: scale(1.08); /* 悬浮放大稍调大，更明显 */
+        }
+
+        /* 展开后的尺寸同步放大 */
+        .float-box.active {
+            /* 展开内边距从20px 28px → 28px 40px */
+            padding: 28px 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            z-index: 20;
+            transform: scale(1.25); /* 展开放大稍调大 */
+            min-width: 240px; /* 展开最小宽度从180px → 240px */
+            white-space: normal;
+            text-align: center;
+            border-radius: 20px; /* 展开圆角同步放大 */
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* 愿望标题文字放大 */
+        .float-box .title {
+            font-size: 22px; /* 从18px → 22px */
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: inherit;
+        }
+
+        /* 祝福文字放大 */
+        .float-box .msg {
+            display: none;
+            font-size: 20px; /* 从17px → 20px */
+            font-weight: 800;
+            line-height: 1.7;
+            opacity: 1;
+            letter-spacing: 0.5px;
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .float-box.active .msg {
+            display: block;
+        }
+
+        @keyframes floatCake {
+            0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}
+        }
+        @keyframes fall {
+            0%{transform:translateY(-10px);opacity:0}10%{opacity:1}100%{transform:translateY(100vh);opacity:0}
         }
     </style>
 </head>
+
 <body>
-    <!-- 可根据页面替换图标：🎂❤️📸📝✨🐴 -->
-    <div class="icon">🔨</div>
-    <div class="title">页面正在精心搭建中</div>
-    <div class="desc">
-        该功能页面尚未完成设计与开发，<br>
-        敬请期待后续更新～
+    <div id="wishArea"></div>
+    <div id="confetti"></div>
+
+    <div class="card" id="mainCard">
+        <div class="cake-box">
+            <div class="cake">🎂</div>
+        </div>
+        <h1 class="title">生日快乐</h1>
+        <p class="wish-text">愿所有美好如约而至<br>平安喜乐 万事胜意</p>
+        <a href="../" class="back">← 返回首页</a>
     </div>
-    <!-- 返回导航页，../ 代表回到根目录 -->
-    <a href="../" class="back-btn">← 回到导航首页</a>
+
+    <script>
+        const wishes = [
+            { t: "暴富💰", m: "愿你财源滚滚，生活富足", color: "#ff6b81" },
+            { t: "变美✨", m: "愿你永远耀眼，温柔又好看", color: "#f97316" },
+            { t: "变瘦🔥", m: "愿你身材超棒，自信发光", color: "#8b5cf6" },
+            { t: "平安健康", m: "愿你无病无灾，岁岁平安", color: "#3b82f6" },
+            { t: "开心快乐", m: "愿你每天都笑，烦恼全消", color: "#10b981" },
+            { t: "学业进步", m: "愿你逢考必过，前程似锦", color: "#f59e0b" },
+            { t: "工作顺利", m: "愿你职场顺利，升职加薪", color: "#ec4899" },
+            { t: "万事顺意", m: "愿你事事顺心，所愿皆成", color: "#6366f1" },
+            { t: "永远幸福", m: "愿你被爱包围，甜甜蜜蜜", color: "#84cc16" },
+            { t: "心想事成", m: "愿你想要的都能拥有", color: "#06b6d4" },
+            { t: "家人平安", m: "愿家人安康，团圆幸福", color: "#d946ef" },
+            { t: "好运连连", m: "愿你锦鲤附体，好运不断", color: "#f87171" },
+            { t: "无忧无虑", m: "愿你自在快乐，没有忧愁", color: "#4ade80" },
+            { t: "暴富暴美", m: "愿你又美又有钱，人生开挂", color: "#f43f5e" },
+            { t: "被爱包围", m: "愿你永远被温柔和爱包围", color: "#22d3ee" }
+        ];
+
+        const wishArea = document.getElementById("wishArea");
+        const boxes = [];
+        const canvasWidth = window.innerWidth;
+        const canvasHeight = window.innerHeight;
+        const bounce = 0.8;
+        const mainCard = document.getElementById("mainCard");
+        let cardBounds = {};
+
+        class WishBox {
+            constructor(data, index) {
+                this.el = document.createElement("div");
+                this.el.className = "float-box";
+                this.el.innerHTML = `
+                    <div class="title">${data.t}</div>
+                    <div class="msg">${data.m}</div>
+                `;
+                this.el.style.color = data.color;
+                this.el.style.borderColor = data.color;
+
+                // 初始位置适配大尺寸文字框，避开贺卡中心
+                do {
+                    this.x = Math.random() * (canvasWidth - 300) + 150;
+                    this.y = Math.random() * (canvasHeight - 300) + 150;
+                } while (
+                    Math.abs(this.x - canvasWidth/2) < cardBounds.width/2 &&
+                    Math.abs(this.y - canvasHeight/2) < cardBounds.height/2
+                );
+
+                this.vx = (Math.random() - 0.5) * 0.7; // 速度稍降，大尺寸移动更稳
+                this.vy = (Math.random() - 0.5) * 0.7;
+                this.width = 0;
+                this.height = 0;
+
+                this.el.onclick = () => {
+                    this.el.classList.toggle("active");
+                    if (this.el.classList.contains('active')) {
+                        this.el.style.background = `linear-gradient(90deg, ${darkenColor(data.color, 15)}, ${data.color})`;
+                    } else {
+                        this.el.style.background = "rgba(255,255,255,0.92)";
+                        this.el.style.color = data.color;
+                    }
+                    setTimeout(() => this.updateSize(), 100);
+                };
+
+                wishArea.appendChild(this.el);
+                setTimeout(() => this.updateSize(), 0);
+                this.updatePosition();
+            }
+
+            updateSize() {
+                this.width = this.el.offsetWidth;
+                this.height = this.el.offsetHeight;
+            }
+
+            updatePosition() {
+                this.el.style.left = `${this.x - this.width/2}px`;
+                this.el.style.top = `${this.y - this.height/2}px`;
+            }
+
+            checkCardCollision() {
+                const boxLeft = this.x - this.width/2;
+                const boxRight = this.x + this.width/2;
+                const boxTop = this.y - this.height/2;
+                const boxBottom = this.y + this.height/2;
+                const cardLeft = cardBounds.left;
+                const cardRight = cardBounds.right;
+                const cardTop = cardBounds.top;
+                const cardBottom = cardBounds.bottom;
+
+                if (boxRight > cardLeft && boxLeft < cardLeft) {
+                    this.x = cardLeft - this.width/2; 
+                    this.vx = -this.vx * bounce;
+                } else if (boxLeft < cardRight && boxRight > cardRight) {
+                    this.x = cardRight + this.width/2; 
+                    this.vx = -this.vx * bounce;
+                }
+                if (boxBottom > cardTop && boxTop < cardTop) {
+                    this.y = cardTop - this.height/2; 
+                    this.vy = -this.vy * bounce;
+                } else if (boxTop < cardBottom && boxBottom > cardBottom) {
+                    this.y = cardBottom + this.height/2; 
+                    this.vy = -this.vy * bounce;
+                }
+            }
+
+            update() {
+                this.checkCardCollision();
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x - this.width/2 < 0) { 
+                    this.x = this.width/2; 
+                    this.vx *= -bounce; 
+                }
+                if (this.x + this.width/2 > canvasWidth) { 
+                    this.x = canvasWidth - this.width/2; 
+                    this.vx *= -bounce; 
+                }
+                if (this.y - this.height/2 < 0) { 
+                    this.y = this.height/2; 
+                    this.vy *= -bounce; 
+                }
+                if (this.y + this.height/2 > canvasHeight) { 
+                    this.y = canvasHeight - this.height/2; 
+                    this.vy *= -bounce; 
+                }
+                this.updatePosition();
+            }
+
+            checkCollision(other) {
+                const dx = this.x - other.x;
+                const dy = this.y - other.y;
+                const dist = Math.hypot(dx, dy);
+                const minDist = (this.width + other.width)/2;
+                if (dist < minDist && dist > 0) {
+                    const angle = Math.atan2(dy, dx);
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+                    const vx1 = this.vx * cos + this.vy * sin;
+                    const vy1 = this.vy * cos - this.vx * sin;
+                    const vx2 = other.vx * cos + other.vy * sin;
+                    const vy2 = other.vy * cos - other.vx * sin;
+                    this.vx = vx2 * cos - vy1 * sin;
+                    this.vy = vy1 * cos + vx2 * sin;
+                    other.vx = vx1 * cos - vy2 * sin;
+                    other.vy = vy2 * cos + vx1 * sin;
+                    const overlap = minDist - dist;
+                    this.x += overlap * cos * 0.5;
+                    this.y += overlap * sin * 0.5;
+                    other.x -= overlap * cos * 0.5;
+                    other.y -= overlap * sin * 0.5;
+                }
+            }
+        }
+
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#",""),16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, (num >> 8 & 0xFF) - amt);
+            const B = Math.max(0, (num & 0xFF) - amt);
+            return "#" + (R.toString(16).padStart(2,'0') + G.toString(16).padStart(2,'0') + B.toString(16).padStart(2,'0'));
+        }
+
+        function initCardBounds() {
+            const r = mainCard.getBoundingClientRect();
+            cardBounds = {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height};
+        }
+
+        initCardBounds();
+        wishes.forEach((item,i) => boxes.push(new WishBox(item,i)));
+
+        function animate(){
+            boxes.forEach(b => b.update());
+            for(let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++) boxes[i].checkCollision(boxes[j]);
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        setInterval(()=>{
+            const c = document.createElement("div");
+            c.className = "confetti " + (Math.random()>.5?"circle":"star");
+            c.style.left = Math.random()*100 + "vw";
+            c.style.backgroundColor = ["#ff6b81","#f97316","#8b5cf6"][Math.floor(Math.random()*3)];
+            c.style.animationDuration = Math.random()*4+4 + "s";
+            confetti.appendChild(c);
+            setTimeout(()=>c.remove(), 5000);
+        }, 180);
+
+        window.addEventListener("resize", () => {
+            initCardBounds();
+            boxes.forEach(b=>{
+                do{
+                    b.x = Math.random()*(canvasWidth-300)+150;
+                    b.y = Math.random()*(canvasHeight-300)+150;
+                }while(Math.abs(b.x-canvasWidth/2)<cardBounds.width/2 && Math.abs(b.y-canvasHeight/2)<cardBounds.height/2);
+                b.updatePosition();
+            });
+        });
+    </script>
 </body>
 </html>
