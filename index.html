@@ -40,7 +40,40 @@
             justify-content: center;
             padding: 50px 20px;
             color: var(--text-main);
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom); /* 适配手机刘海/底部安全区 */
+            touch-action: manipulation; /* 禁用移动端双击缩放，优化触摸体验 */
+        }
+
+        /* 音乐控制按钮 - 适配双端触摸/点击 */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            font-size: 20px;
+            color: var(--primary);
+            /* 移动端触摸优化 */
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        .music-control:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-primary);
+            border-color: var(--primary);
+        }
+        /* 移动端按钮点击反馈 */
+        .music-control:active {
+            transform: scale(0.95);
         }
 
         /* 时间模块 */
@@ -69,6 +102,8 @@
             text-align: center;
             margin-bottom: 50px;
             pointer-events: none;
+            width: 100%;
+            max-width: 800px;
         }
         .nav-header h1 {
             font-size: clamp(32px, 8vmin, 48px);
@@ -79,24 +114,26 @@
             background-clip: text;
             color: transparent;
             text-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+            line-height: 1.2;
         }
         .nav-header p {
             font-size: clamp(14px, 3vmin, 17px);
             color: var(--text-secondary);
             line-height: 1.6;
             letter-spacing: 0.5px;
+            padding: 0 10px;
         }
 
-        /* 导航容器 */
+        /* 导航容器 - 优化移动端网格布局 */
         .nav-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* 移动端最小卡片宽度适配 */
+            gap: 20px; /* 移动端缩小间距，避免溢出 */
             width: 100%;
             max-width: 950px;
         }
 
-        /* 卡片核心 - 统一风格 */
+        /* 卡片核心 - 双端交互优化 */
         .nav-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -106,18 +143,23 @@
             cursor: pointer;
             position: relative;
             backdrop-filter: blur(10px);
+            min-height: 220px; /* 保证移动端卡片高度一致 */
         }
-        .nav-card:hover, .nav-card:active {
+        .nav-card:hover, .nav-card:focus {
             transform: translateY(-10px) scale(1.025);
             border-color: var(--primary);
             box-shadow: var(--shadow-heavy), var(--shadow-primary);
+        }
+        /* 移动端触摸反馈 */
+        .nav-card:active {
+            transform: translateY(-5px) scale(0.98);
         }
         .nav-card a {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 24px;
+            padding: 30px 20px; /* 移动端缩小内边距 */
             color: inherit;
             text-decoration: none;
             height: 100%;
@@ -126,21 +168,22 @@
             z-index: 2;
         }
         .card-icon {
-            font-size: clamp(48px, 10vmin, 56px);
-            margin-bottom: 24px;
+            font-size: clamp(40px, 10vmin, 56px);
+            margin-bottom: 20px;
             text-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
             transform: rotate(0deg);
         }
-        .nav-card:hover .card-icon, .nav-card:active .card-icon {
+        .nav-card:hover .card-icon, .nav-card:focus .card-icon {
             transform: rotate(5deg) scale(1.1);
             color: var(--primary);
         }
         .card-name {
             font-size: clamp(18px, 4vmin, 20px);
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: var(--text-main);
             letter-spacing: 0.3px;
+            text-align: center;
         }
         .card-desc {
             font-size: clamp(12px, 3vmin, 14px);
@@ -148,39 +191,94 @@
             color: var(--text-secondary);
             text-align: center;
             line-height: 1.7;
-            max-width: 220px;
+            max-width: 200px;
+            padding: 0 5px;
         }
 
         .nav-footer {
-            margin-top: 90px;
+            margin-top: 70px; /* 移动端缩小底部间距 */
             font-size: clamp(12px, 3vmin, 14px);
             color: var(--text-secondary);
             text-align: center;
             pointer-events: none;
             letter-spacing: 0.5px;
+            width: 100%;
+            padding: 0 20px 20px; /* 适配底部安全区 */
         }
 
-        /* 移动端适配 */
+        /* 音频元素隐藏优化（双端兼容） */
+        audio {
+            display: none !important;
+        }
+
+        /* 移动端专项适配（768px以下） */
         @media (max-width: 768px) {
             body {
                 padding: 40px 16px;
+                justify-content: flex-start; /* 移动端顶部对齐，避免内容居中溢出 */
             }
+
+            .music-control {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                top: 15px;
+                right: 15px;
+            }
+
+            .time-box {
+                margin-top: 20px;
+                margin-bottom: 15px;
+            }
+
+            .nav-header {
+                margin-bottom: 35px;
+            }
+
             .nav-container {
-                gap: 20px;
+                gap: 18px;
             }
+
             .nav-card a {
-                padding: 32px 20px;
+                padding: 25px 16px;
             }
-            .nav-card:hover, .nav-card:active {
+
+            .nav-card:hover, .nav-card:focus {
                 transform: translateY(-8px) scale(1.01);
             }
+
             .nav-footer {
-                margin-top: 70px;
+                margin-top: 50px;
+                font-size: 13px;
+            }
+        }
+
+        /* 小屏手机适配（375px以下） */
+        @media (max-width: 375px) {
+            .nav-container {
+                grid-template-columns: 1fr; /* 单列布局，避免卡片挤压 */
+            }
+
+            .card-icon {
+                font-size: 40px;
+            }
+
+            .nav-header h1 {
+                font-size: clamp(28px, 10vmin, 36px);
             }
         }
     </style>
 </head>
 <body>
+    <!-- 音乐控制按钮（双端兼容） -->
+    <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
+    <!-- 音频元素（双端兼容格式） -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/huixie388/huixie388.github.io/main/music/BGM2.mp3" type="audio/mpeg">
+        <source src="https://raw.githubusercontent.com/huixie388/huixie388.github.io/main/music/BGM2.ogg" type="audio/ogg"> <!-- 备用格式，兼容更多浏览器 -->
+        你的浏览器不支持音频播放
+    </audio>
+
     <div class="time-box">
         <div class="time" id="realTime">00:00:00</div>
         <div class="date" id="realDate">2026-01-01 星期三</div>
@@ -193,42 +291,42 @@
 
     <div class="nav-container">
         <div class="nav-card">
-            <a href="horse2026">
+            <a href="horse2026" tabindex="0">
                 <div class="card-icon">🐴</div>
                 <div class="card-name">2026马年祝福</div>
                 <div class="card-desc">动态交互新春弹窗 | 3D鼠标跟随+音乐</div>
             </a>
         </div>
         <div class="nav-card">
-            <a href="birthday">
+            <a href="birthday" tabindex="0">
                 <div class="card-icon">🎂</div>
                 <div class="card-name">生日贺卡</div>
                 <div class="card-desc">专属定制生日页面 | 动态文字+背景</div>
             </a>
         </div>
         <div class="nav-card">
-            <a href="love">
+            <a href="love" tabindex="0">
                 <div class="card-icon">❤️</div>
                 <div class="card-name">爱心弹窗</div>
                 <div class="card-desc">前端小工具 | 一个人想着一个人</div>
             </a>
         </div>
         <div class="nav-card">
-            <a href="test">
+            <a href="test" tabindex="0">
                 <div class="card-icon">✨</div>
                 <div class="card-name">测试页面</div>
                 <div class="card-desc">静态页面示例 | 基础样式测试</div>
             </a>
         </div>
         <div class="nav-card">
-            <a href="album">
+            <a href="album" tabindex="0">
                 <div class="card-icon">📸</div>
                 <div class="card-name">相册集</div>
                 <div class="card-desc">个人照片展示 | 动态相册</div>
             </a>
         </div>
         <div class="nav-card">
-            <a href="todo">
+            <a href="todo" tabindex="0">
                 <div class="card-icon">📝</div>
                 <div class="card-name">待办清单</div>
                 <div class="card-desc">个人任务管理 | 实时同步</div>
@@ -241,27 +339,121 @@
     </div>
 
     <script>
+        // 时间显示功能（双端兼容，避免日期格式异常）
         const timeEl = document.getElementById('realTime');
         const dateEl = document.getElementById('realDate');
 
         const formatNum = (num) => num.toString().padStart(2, '0');
         const getWeek = (n) => {
             const weekList = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            return weekList[n];
+            return weekList[n] || '星期一'; // 容错处理，避免索引异常
         };
 
         const updateTime = () => {
-            const now = new Date();
-            const time = `${formatNum(now.getHours())}:${formatNum(now.getMinutes())}:${formatNum(now.getSeconds())}`;
-            const solarDateStr = `${now.getFullYear()}-${formatNum(now.getMonth() + 1)}-${formatNum(now.getDate())}`;
-            const solarDate = `${solarDateStr} ${getWeek(now.getDay())}`;
+            try {
+                const now = new Date();
+                const hours = formatNum(now.getHours());
+                const minutes = formatNum(now.getMinutes());
+                const seconds = formatNum(now.getSeconds());
+                const time = `${hours}:${minutes}:${seconds}`;
+                
+                const year = now.getFullYear();
+                const month = formatNum(now.getMonth() + 1);
+                const day = formatNum(now.getDate());
+                const week = getWeek(now.getDay());
+                const solarDate = `${year}-${month}-${day} ${week}`;
 
-            timeEl.innerText = time;
-            dateEl.textContent = solarDate;
+                timeEl.innerText = time;
+                dateEl.textContent = solarDate;
+            } catch (err) {
+                console.log('时间更新失败:', err);
+                timeEl.innerText = '00:00:00';
+                dateEl.textContent = '2026-01-01 星期三'; // 兜底显示
+            }
         };
 
         updateTime();
         setInterval(updateTime, 1000);
+
+        // 背景音乐控制（双端兼容，解决移动端自动播放限制）
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        let isPlaying = false;
+        let initMusicFlag = false; // 避免重复初始化
+
+        // 统一处理用户交互（点击/触摸/键盘），触发音频播放权限
+        const initMusic = () => {
+            if (initMusicFlag) return;
+            initMusicFlag = true;
+
+            // 尝试播放音频，兼容不同浏览器
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicBtn.textContent = '🔇';
+            }).catch(err => {
+                console.log('音频初始化失败，需手动点击播放:', err);
+                musicBtn.textContent = '🎵'; // 保持初始状态，提示用户点击
+            });
+
+            // 移除所有初始化事件，避免重复触发
+            document.removeEventListener('click', initMusic);
+            document.removeEventListener('touchstart', initMusic);
+            document.removeEventListener('keydown', initMusic);
+        };
+
+        // 绑定多端交互事件，确保获取播放权限
+        document.addEventListener('click', initMusic, { once: true });
+        document.addEventListener('touchstart', initMusic, { once: true, passive: true }); // passive优化触摸性能
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') initMusic();
+        }, { once: true });
+
+        // 音乐控制按钮交互（支持点击/触摸/键盘回车）
+        musicBtn.addEventListener('click', toggleMusic);
+        musicBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleMusic();
+        }, { passive: false });
+        musicBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleMusic();
+            }
+        });
+
+        // 播放/暂停切换函数
+        function toggleMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.textContent = '🎵';
+            } else {
+                bgMusic.play().catch(err => {
+                    console.log('播放失败，需先获取权限:', err);
+                    // 再次尝试初始化，兼容部分浏览器
+                    initMusic();
+                });
+                musicBtn.textContent = '🔇';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // 监听音频状态变化，同步按钮显示
+        bgMusic.addEventListener('play', () => {
+            isPlaying = true;
+            musicBtn.textContent = '🔇';
+        });
+
+        bgMusic.addEventListener('pause', () => {
+            isPlaying = false;
+            musicBtn.textContent = '🎵';
+        });
+
+        // 监听音频加载失败，给出兜底提示
+        bgMusic.addEventListener('error', () => {
+            console.log('音频文件加载失败');
+            musicBtn.textContent = '❌';
+            musicBtn.style.color = '#ff4d4f';
+        });
     </script>
 </body>
 </html>
