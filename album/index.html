@@ -2,68 +2,316 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 页面标题，和导航卡片名称一致，比如“生日贺卡”“相册集” -->
-    <title>生日贺卡 - 宸宇的website</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>相册集 | 宸宇的website</title>
     <style>
-        /* 全局样式，和导航页风格统一 */
+        /* 和主页完全统一主题变量，无视觉割裂 */
+        :root {
+            --primary: #4299e1;
+            --primary-light: rgba(66, 153, 225, 0.15);
+            --primary-shadow: rgba(66, 153, 225, 0.25);
+            --bg: linear-gradient(150deg, #f8fafc, #f1f5f9);
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.03);
+            --shadow-heavy: 0 15px 30px rgba(0, 0, 0, 0.08);
+            --shadow-primary: 0 8px 20px var(--primary-shadow);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "微软雅黑", Inter, sans-serif;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
         }
+
         body {
             min-height: 100vh;
-            background: linear-gradient(150deg, #f8fafc, #f1f5f9);
+            font-family: "Inter", "微软雅黑", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #1e293b;
+            padding: 50px 20px;
+            color: var(--text-main);
+            padding-bottom: env(safe-area-inset-bottom);
+            touch-action: manipulation;
+            overflow: hidden;
         }
-        /* 提示图标 */
-        .icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            color: #4299e1; /* 和导航页主色一致 */
+
+        /* 音乐控制按钮 同主页样式 */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            font-size: 20px;
+            color: var(--primary);
+            outline: none;
         }
-        /* 提示标题 */
-        .title {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 10px;
+        .music-control:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-primary);
+            border-color: var(--primary);
         }
-        /* 提示描述 */
-        .desc {
-            font-size: 16px;
-            color: #64748b;
-            margin-bottom: 30px;
+        .music-control:active {
+            transform: scale(0.95);
         }
-        /* 返回导航页按钮，样式适配 */
-        .back-btn {
-            padding: 10px 20px;
-            background-color: #4299e1;
-            color: white;
+
+        /* 返回主页按钮 */
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            font-size: 20px;
+            color: var(--primary);
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
         }
-        .back-btn:hover {
-            background-color: #3b82f6;
-            transform: translateY(-2px);
+        .back-home:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-primary);
+            border-color: var(--primary);
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            pointer-events: none;
+        }
+        .page-title h1 {
+            font-size: clamp(28px, 7vmin, 42px);
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--text-main), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: clamp(13px, 3vmin, 16px);
+        }
+
+        /* 扑克牌相册容器核心 */
+        .card-stack-wrap {
+            position: relative;
+            width: min(80vw, 420px);
+            height: min(60vh, 560px);
+        }
+
+        /* 单张照片卡片 扑克牌样式 */
+        .photo-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            overflow: hidden;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+        .photo-card:active {
+            cursor: grabbing;
+        }
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        /* 底部文字 */
+        .footer-text {
+            position: fixed;
+            bottom: 30px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 12px;
+            }
+            .music-control, .back-home {
+                width: 44px;
+                height: 44px;
+                font-size: 17px;
+                top: 14px;
+            }
+            .page-title {
+                margin-bottom: 30px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 提示图标，可根据页面修改：📅🎂📸📝✨❤️等 -->
-    <div class="icon">🎂</div>
-    <!-- 提示标题，和子页面名称一致 -->
-    <div class="title">页面建设中</div>
-    <!-- 提示描述 -->
-    <div class="desc">该页面正在精心设计中，敬请期待～</div>
-    <!-- 返回导航页按钮，点击直接回到根目录导航页 -->
-    <a href="../" class="back-btn">← 回到宸宇的导航页</a>
+    <!-- 返回主页 -->
+    <a href="../" class="back-home">←</a>
+    <!-- 音乐控制按钮 -->
+    <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
+    <!-- 背景音乐 BGM3.mp3 路径 -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="../music/BGM3.mp3" type="audio/mpeg">
+        你的浏览器不支持音频播放
+    
+
+    <div class="page-title">
+        <h1>我的相册</h1>
+        <p>拖动照片抽出翻看，松开自动归位堆叠</p>
+    </div>
+
+    <!-- 扑克牌堆叠相册区域 -->
+    <div class="card-stack-wrap" id="stackWrap">
+        <!-- 照片1~12，路径指向根目录photo文件夹 -->
+        <div class="photo-card" data-index="12"><img src="../photo/12.jpg" alt="照片12"></div>
+        <div class="photo-card" data-index="11"><img src="../photo/11.jpg" alt="照片11"></div>
+        <div class="photo-card" data-index="10"><img src="../photo/10.jpg" alt="照片10"></div>
+        <div class="photo-card" data-index="9"><img src="../photo/9.jpg" alt="照片9"></div>
+        <div class="photo-card" data-index="8"><img src="../photo/8.jpg" alt="照片8"></div>
+        <div class="photo-card" data-index="7"><img src="../photo/7.jpg" alt="照片7"></div>
+        <div class="photo-card" data-index="6"><img src="../photo/6.jpg" alt="照片6"></div>
+        <div class="photo-card" data-index="5"><img src="../photo/5.jpg" alt="照片5"></div>
+        <div class="photo-card" data-index="4"><img src="../photo/4.jpg" alt="照片4"></div>
+        <div class="photo-card" data-index="3"><img src="../photo/3.jpg" alt="照片3"></div>
+        <div class="photo-card" data-index="2"><img src="../photo/2.jpg" alt="照片2"></div>
+        <div class="photo-card" data-index="1"><img src="../photo/1.jpg" alt="照片1"></div>
+    </div>
+
+    <div class="footer-text">© 2026 宸宇的website</div>
+
+    <script>
+        // ========== 1. 背景音乐控制（和主页逻辑完全一致） ==========
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        let isPlaying = false;
+        let initMusicFlag = false;
+
+        const initMusic = () => {
+            if (initMusicFlag) return;
+            initMusicFlag = true;
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicBtn.textContent = '🔇';
+            }).catch(err => {
+                musicBtn.textContent = '🎵';
+            });
+            document.removeEventListener('click', initMusic);
+            document.removeEventListener('touchstart', initMusic);
+        };
+        document.addEventListener('click', initMusic, { once: true });
+        document.addEventListener('touchstart', initMusic, { once: true, passive: true });
+
+        function toggleMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.textContent = '🎵';
+            } else {
+                bgMusic.play().catch(()=>initMusic());
+                musicBtn.textContent = '🔇';
+            }
+            isPlaying = !isPlaying;
+        }
+        musicBtn.addEventListener('click', toggleMusic);
+        musicBtn.addEventListener('touchstart', e=>{e.preventDefault();toggleMusic()}, {passive:false});
+        bgMusic.addEventListener('play', ()=>{isPlaying=true;musicBtn.textContent='🔇'});
+        bgMusic.addEventListener('pause', ()=>{isPlaying=false;musicBtn.textContent='🎵'});
+        bgMusic.addEventListener('error', ()=>{musicBtn.textContent='❌';musicBtn.style.color='#ff4d4f'});
+
+        // ========== 2. 扑克牌堆叠拖拽抽拉核心逻辑 ==========
+        const wrap = document.getElementById('stackWrap');
+        const cards = Array.from(document.querySelectorAll('.photo-card'));
+        const total = cards.length;
+        const offsetX = 6;  // 每张卡片横向错落偏移
+        const offsetRotate = 2.5; // 每张轻微旋转角度
+
+        // 初始化堆叠错落位置
+        function resetStack() {
+            cards.forEach((card, idx) => {
+                const realIdx = Number(card.dataset.index);
+                const base = total - realIdx;
+                card.style.zIndex = realIdx;
+                card.style.transform = `translate(${base * offsetX}px, ${base * offsetX}px) rotate(${base * offsetRotate}deg)`;
+            });
+        }
+        resetStack();
+
+        // 拖拽变量
+        let dragCard = null;
+        let dragStartX = 0, dragStartY = 0;
+        let cardStartX = 0, cardStartY = 0;
+
+        // 鼠标/触摸按下
+        function dragStart(e) {
+            dragCard = e.currentTarget;
+            const touch = e.touches ? e.touches[0] : e;
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            const rect = dragCard.getBoundingClientRect();
+            cardStartX = rect.left - wrap.getBoundingClientRect().left;
+            cardStartY = rect.top - wrap.getBoundingClientRect().top;
+            dragCard.style.zIndex = 999; // 拖拽时放到最顶层
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchmove', dragMove, {passive:false});
+            document.addEventListener('touchend', dragEnd);
+        }
+        // 拖拽移动
+        function dragMove(e) {
+            if(!dragCard) return;
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const dx = touch.clientX - dragStartX;
+            const dy = touch.clientY - dragStartY;
+            dragCard.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px) rotate(0deg) scale(1.04)`;
+        }
+        // 松开自动归位堆叠
+        function dragEnd() {
+            if(!dragCard) return;
+            dragCard = null;
+            resetStack();
+            document.removeEventListener('mousemove', dragMove);
+            document.removeEventListener('mouseup', dragEnd);
+            document.removeEventListener('touchmove', dragMove);
+            document.removeEventListener('touchend', dragEnd);
+        }
+        // 绑定所有卡片拖拽事件
+        cards.forEach(card=>{
+            card.addEventListener('mousedown', dragStart);
+            card.addEventListener('touchstart', dragStart, {passive:false});
+        });
+    </script>
 </body>
 </html>
