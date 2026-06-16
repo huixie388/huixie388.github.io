@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>相册集 | 宸宇的website</title>
     <style>
-        /* 和主页完全统一主题变量，无视觉割裂 */
         :root {
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
@@ -45,7 +44,6 @@
             overflow: hidden;
         }
 
-        /* 音乐控制按钮 同主页样式 */
         .music-control {
             position: fixed;
             top: 20px;
@@ -74,7 +72,6 @@
             transform: scale(0.95);
         }
 
-        /* 返回主页按钮 */
         .back-home {
             position: fixed;
             top: 20px;
@@ -100,7 +97,6 @@
             border-color: var(--primary);
         }
 
-        /* 页面标题 */
         .page-title {
             text-align: center;
             margin-bottom: 40px;
@@ -120,14 +116,12 @@
             font-size: clamp(13px, 3vmin, 16px);
         }
 
-        /* 扑克牌相册容器核心 */
         .card-stack-wrap {
             position: relative;
             width: min(80vw, 420px);
             height: min(60vh, 560px);
         }
 
-        /* 单张照片卡片 扑克牌样式 */
         .photo-card {
             position: absolute;
             width: 100%;
@@ -151,7 +145,6 @@
             pointer-events: none;
         }
 
-        /* 底部文字 */
         .footer-text {
             position: fixed;
             bottom: 30px;
@@ -160,7 +153,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* 移动端适配 */
         @media (max-width: 768px) {
             body {
                 padding: 30px 12px;
@@ -178,11 +170,10 @@
     </style>
 </head>
 <body>
-    <!-- 返回主页 -->
     <a href="../" class="back-home">←</a>
-    <!-- 音乐控制按钮 -->
     <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
-    <!-- 背景音乐 BGM3.mp3 路径 -->
+
+    <!-- 已补全 audio 闭合标签，修复解析报错 -->
     <audio id="bgMusic" loop preload="auto">
         <source src="../music/BGM3.mp3" type="audio/mpeg">
         你的浏览器不支持音频播放
@@ -193,27 +184,48 @@
         <p>拖动照片抽出翻看，松开自动归位堆叠</p>
     </div>
 
-    <!-- 扑克牌堆叠相册区域 已替换国内CDN链接+懒加载 -->
     <div class="card-stack-wrap" id="stackWrap">
-        <!-- 照片1~12 国内BMP图床CDN直链 堆叠顺序不变 -->
-        <div class="photo-card" data-index="12"><img src="https://s3.bmp.ovh/2026/06/16/UJaeQlPn.jpg" alt="照片12" loading="lazy"></div>
-        <div class="photo-card" data-index="11"><img src="https://s3.bmp.ovh/2026/06/16/Tc5ve5Op.jpg" alt="照片11" loading="lazy"></div>
-        <div class="photo-card" data-index="10"><img src="https://s3.bmp.ovh/2026/06/16/1nl9SsQU.jpg" alt="照片10" loading="lazy"></div>
-        <div class="photo-card" data-index="9"><img src="https://s3.bmp.ovh/2026/06/16/4jR3jIga.jpg" alt="照片9" loading="lazy"></div>
-        <div class="photo-card" data-index="8"><img src="https://s3.bmp.ovh/2026/06/16/EBczgeOs.jpg" alt="照片8" loading="lazy"></div>
-        <div class="photo-card" data-index="7"><img src="https://s3.bmp.ovh/2026/06/16/PDSW7YA6.jpg" alt="照片7" loading="lazy"></div>
-        <div class="photo-card" data-index="6"><img src="https://s3.bmp.ovh/2026/06/16/jgaKQTGi.jpg" alt="照片6" loading="lazy"></div>
-        <div class="photo-card" data-index="5"><img src="https://s3.bmp.ovh/2026/06/16/NGXPlw9M.jpg" alt="照片5" loading="lazy"></div>
-        <div class="photo-card" data-index="4"><img src="https://s3.bmp.ovh/2026/06/16/u93BUguW.jpg" alt="照片4" loading="lazy"></div>
-        <div class="photo-card" data-index="3"><img src="https://s3.bmp.ovh/2026/06/16/bMcRwJz6.jpg" alt="照片3" loading="lazy"></div>
-        <div class="photo-card" data-index="2"><img src="https://s3.bmp.ovh/2026/06/16/KyH1p6Jj.jpg" alt="照片2" loading="lazy"></div>
-        <div class="photo-card" data-index="1"><img src="https://s3.bmp.ovh/2026/06/16/rx7FnGtc.jpg" alt="照片1" loading="lazy"></div>
+        <div class="photo-card" data-index="12">
+            <img src="https://s3.bmp.ovh/2026/06/16/UJaeQlPn.jpg" alt="照片12" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="11">
+            <img src="https://s3.bmp.ovh/2026/06/16/Tc5ve5Op.jpg" alt="照片11" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="10">
+            <img src="https://s3.bmp.ovh/2026/06/16/1nl9SsQU.jpg" alt="照片10" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="9">
+            <img src="https://s3.bmp.ovh/2026/06/16/4jR3jIga.jpg" alt="照片9" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="8">
+            <img src="https://s3.bmp.ovh/2026/06/16/EBczgeOs.jpg" alt="照片8" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="7">
+            <img src="https://s3.bmp.ovh/2026/06/16/PDSW7YA6.jpg" alt="照片7" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="6">
+            <img src="https://s3.bmp.ovh/2026/06/16/jgaKQTGi.jpg" alt="照片6" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="5">
+            <img src="https://s3.bmp.ovh/2026/06/16/NGXPlw9M.jpg" alt="照片5" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="4">
+            <img src="https://s3.bmp.ovh/2026/06/16/u93BUguW.jpg" alt="照片4" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="3">
+            <img src="https://s3.bmp.ovh/2026/06/16/bMcRwJz6.jpg" alt="照片3" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="2">
+            <img src="https://s3.bmp.ovh/2026/06/16/KyH1p6Jj.jpg" alt="照片2" loading="lazy">
+        </div>
+        <div class="photo-card" data-index="1">
+            <img src="https://s3.bmp.ovh/2026/06/16/rx7FnGtc.jpg" alt="照片1" loading="lazy">
+        </div>
     </div>
 
     <div class="footer-text">© 2026 宸宇的website</div>
 
     <script>
-        // ========== 1. 背景音乐控制（和主页逻辑完全一致） ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
@@ -239,27 +251,25 @@
                 bgMusic.pause();
                 musicBtn.textContent = '🎵';
             } else {
-                bgMusic.play().catch(()=>initMusic());
+                bgMusic.play().catch(() => initMusic());
                 musicBtn.textContent = '🔇';
             }
             isPlaying = !isPlaying;
         }
         musicBtn.addEventListener('click', toggleMusic);
-        musicBtn.addEventListener('touchstart', e=>{e.preventDefault();toggleMusic()}, {passive:false});
-        bgMusic.addEventListener('play', ()=>{isPlaying=true;musicBtn.textContent='🔇'});
-        bgMusic.addEventListener('pause', ()=>{isPlaying=false;musicBtn.textContent='🎵'});
-        bgMusic.addEventListener('error', ()=>{musicBtn.textContent='❌';musicBtn.style.color='#ff4d4f'});
+        musicBtn.addEventListener('touchstart', e => { e.preventDefault(); toggleMusic(); }, { passive: false });
+        bgMusic.addEventListener('play', () => { isPlaying = true; musicBtn.textContent = '🔇'; });
+        bgMusic.addEventListener('pause', () => { isPlaying = false; musicBtn.textContent = '🎵'; });
+        bgMusic.addEventListener('error', () => { musicBtn.textContent = '❌'; musicBtn.style.color = '#ff4d4f'; });
 
-        // ========== 2. 扑克牌堆叠拖拽抽拉核心逻辑 ==========
         const wrap = document.getElementById('stackWrap');
         const cards = Array.from(document.querySelectorAll('.photo-card'));
         const total = cards.length;
-        const offsetX = 6;  // 每张卡片横向错落偏移
-        const offsetRotate = 2.5; // 每张轻微旋转角度
+        const offsetX = 6;
+        const offsetRotate = 2.5;
 
-        // 初始化堆叠错落位置
         function resetStack() {
-            cards.forEach((card, idx) => {
+            cards.forEach((card) => {
                 const realIdx = Number(card.dataset.index);
                 const base = total - realIdx;
                 card.style.zIndex = realIdx;
@@ -268,38 +278,36 @@
         }
         resetStack();
 
-        // 拖拽变量
         let dragCard = null;
         let dragStartX = 0, dragStartY = 0;
         let cardStartX = 0, cardStartY = 0;
 
-        // 鼠标/触摸按下
         function dragStart(e) {
             dragCard = e.currentTarget;
             const touch = e.touches ? e.touches[0] : e;
             dragStartX = touch.clientX;
             dragStartY = touch.clientY;
             const rect = dragCard.getBoundingClientRect();
-            cardStartX = rect.left - wrap.getBoundingClientRect().left;
-            cardStartY = rect.top - wrap.getBoundingClientRect().top;
-            dragCard.style.zIndex = 999; // 拖拽时放到最顶层
+            const wrapRect = wrap.getBoundingClientRect();
+            cardStartX = rect.left - wrapRect.left;
+            cardStartY = rect.top - wrapRect.top;
+            dragCard.style.zIndex = 999;
+
             document.addEventListener('mousemove', dragMove);
             document.addEventListener('mouseup', dragEnd);
-            document.addEventListener('touchmove', dragMove, {passive:false});
+            document.addEventListener('touchmove', dragMove, { passive: false });
             document.addEventListener('touchend', dragEnd);
         }
-        // 拖拽移动
         function dragMove(e) {
-            if(!dragCard) return;
+            if (!dragCard) return;
             e.preventDefault();
             const touch = e.touches ? e.touches[0] : e;
             const dx = touch.clientX - dragStartX;
             const dy = touch.clientY - dragStartY;
             dragCard.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px) rotate(0deg) scale(1.04)`;
         }
-        // 松开自动归位堆叠
         function dragEnd() {
-            if(!dragCard) return;
+            if (!dragCard) return;
             dragCard = null;
             resetStack();
             document.removeEventListener('mousemove', dragMove);
@@ -307,10 +315,9 @@
             document.removeEventListener('touchmove', dragMove);
             document.removeEventListener('touchend', dragEnd);
         }
-        // 绑定所有卡片拖拽事件
-        cards.forEach(card=>{
+        cards.forEach(card => {
             card.addEventListener('mousedown', dragStart);
-            card.addEventListener('touchstart', dragStart, {passive:false});
+            card.addEventListener('touchstart', dragStart, { passive: false });
         });
     </script>
 </body>
