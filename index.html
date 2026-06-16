@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>宸宇的website</title>
     <style>
-        /* 全局样式 - 统一主题 (内容与你原版完全一致，未做任何修改) */
+        /* 全局样式 - 统一主题 */
         :root {
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
@@ -44,6 +44,7 @@
             touch-action: manipulation;
         }
 
+        /* 音乐控制按钮 - 适配双端触摸/点击 */
         .music-control {
             position: fixed;
             top: 20px;
@@ -73,6 +74,7 @@
             transform: scale(0.95);
         }
 
+        /* 时间模块 */
         .time-box {
             text-align: center;
             margin-bottom: 20px;
@@ -93,6 +95,7 @@
             line-height: 1.5;
         }
 
+        /* 标题区域 */
         .nav-header {
             text-align: center;
             margin-bottom: 50px;
@@ -119,14 +122,16 @@
             padding: 0 10px;
         }
 
+        /* 导航容器 - 优化移动端网格布局 */
         .nav-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             width: 100%;
-            max-width: 1100px; /* 稍微加宽以容纳7个卡片时的美观度 */
+            max-width: 950px;
         }
 
+        /* 卡片核心 - 双端交互优化 */
         .nav-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -136,7 +141,7 @@
             cursor: pointer;
             position: relative;
             backdrop-filter: blur(10px);
-            min-height: 220px;
+            min-height: 220px; /* 保证移动端卡片高度一致 */
         }
         .nav-card:hover, .nav-card:focus {
             transform: translateY(-10px) scale(1.025);
@@ -198,10 +203,12 @@
             padding: 0 20px 20px;
         }
 
+        /* 音频元素隐藏优化 */
         audio {
             display: none !important;
         }
 
+        /* 移动端专项适配 */
         @media (max-width: 768px) {
             body {
                 padding: 40px 16px;
@@ -236,6 +243,7 @@
             }
         }
 
+        /* 小屏手机适配 */
         @media (max-width: 375px) {
             .nav-container {
                 grid-template-columns: 1fr;
@@ -250,8 +258,9 @@
     </style>
 </head>
 <body>
-    <!-- 音乐控制按钮 -->
+    <!-- 音乐控制按钮（双端兼容） -->
     <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
+    <!-- 音频元素（双端兼容格式） -->
     <audio id="bgMusic" loop preload="auto">
         <source src="https://raw.githubusercontent.com/huixie388/huixie388.github.io/main/music/BGM2.mp3" type="audio/mpeg">
         <source src="https://raw.githubusercontent.com/huixie388/huixie388.github.io/main/music/BGM2.ogg" type="audio/ogg">
@@ -269,7 +278,7 @@
     </div>
 
     <div class="nav-container">
-        <!-- 原有六个卡片 -->
+        <!-- 原有六个卡片（完全未动） -->
         <div class="nav-card">
             <a href="horse2026" tabindex="0">
                 <div class="card-icon">🐴</div>
@@ -313,15 +322,14 @@
             </a>
         </div>
 
-        <!-- ========= 新增第七个卡片：俄罗斯方块 ========= -->
+        <!-- 新增：俄罗斯方块卡片（仅增加此块，其他不变） -->
         <div class="nav-card">
-            <a href="tetris.html" tabindex="0">   <!-- 这里链接到你即将上传到GitHub的游戏页面 -->
+            <a href="tetris.html" tabindex="0">
                 <div class="card-icon">🎮</div>
                 <div class="card-name">俄罗斯方块</div>
                 <div class="card-desc">经典彩色下落式 | 难度可选 + 落点影子</div>
             </a>
         </div>
-        <!-- ========================================= -->
     </div>
 
     <div class="nav-footer">
@@ -329,7 +337,7 @@
     </div>
 
     <script>
-        // 时间显示功能（完全相同，无改动）
+        // 时间显示功能（原样保留）
         const timeEl = document.getElementById('realTime');
         const dateEl = document.getElementById('realDate');
 
@@ -365,7 +373,7 @@
         updateTime();
         setInterval(updateTime, 1000);
 
-        // 背景音乐控制（完全保留原逻辑）
+        // 背景音乐控制（原样保留）
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
@@ -374,6 +382,7 @@
         const initMusic = () => {
             if (initMusicFlag) return;
             initMusicFlag = true;
+
             bgMusic.play().then(() => {
                 isPlaying = true;
                 musicBtn.textContent = '🔇';
@@ -381,6 +390,7 @@
                 console.log('音频初始化失败，需手动点击播放:', err);
                 musicBtn.textContent = '🎵';
             });
+
             document.removeEventListener('click', initMusic);
             document.removeEventListener('touchstart', initMusic);
             document.removeEventListener('keydown', initMusic);
@@ -422,10 +432,12 @@
             isPlaying = true;
             musicBtn.textContent = '🔇';
         });
+
         bgMusic.addEventListener('pause', () => {
             isPlaying = false;
             musicBtn.textContent = '🎵';
         });
+
         bgMusic.addEventListener('error', () => {
             console.log('音频文件加载失败');
             musicBtn.textContent = '❌';
