@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>俄罗斯方块 - C语言源码</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        body { background: #0a0f1c; font-family: monospace; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: #0f172a; border-radius: 20px; border: 1px solid #334155; }
+        .header { background: #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: #facc15; font-size: 1.4rem; margin: 0; }
+        button { background: #3b82f6; border: none; padding: 6px 14px; border-radius: 30px; color: white; cursor: pointer; }
+        pre { margin: 0; padding: 20px; font-size: 14px; overflow-x: auto; }
+        .back { display: block; margin-top: 20px; color: #60a5fa; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎮 俄罗斯方块 · C语言源码</h1>
+        <button id="copyBtn">复制代码</button>
+    </div>
+    <pre><code id="code" class="language-c">// 加载中...</code></pre>
+</div>
+<a href="index.html" class="back">← 返回首页</a>
+
+<script>
+    // ═════════════════════════════════════════════════════
+    //  👇 在此处替换你的最新 C 语言代码（整段字符串）
+    // ═════════════════════════════════════════════════════
+    const codeString = `#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <conio.h>
+#include <time.h>
+
+// ---------- 游戏配置 ----------
+#define rows 20
+#define cols 10
+#define block_char "[]"
+#define empty_char "  "
+
+// ---------- 全局变量 ----------
+int board[rows][cols] = {0};
+int score = 0;
+int gameover = 0;
+
+// 方块形状
+int shapes[7][4][2] = {
+    {{0,1},{1,1},{2,1},{3,1}}, // I
+    {{0,0},{0,1},{1,1},{2,1}}, // J
+    {{2,0},{0,1},{1,1},{2,1}}, // L
+    {{1,0},{2,0},{1,1},{2,1}}, // O
+    {{1,0},{2,0},{0,1},{1,1}}, // S
+    {{1,0},{0,1},{1,1},{2,1}}, // T
+    {{0,0},{1,0},{1,1},{2,1}}  // Z
+};
+
+int curtype = 0, curx = 0, cury = 0;
+
+// ---------- 辅助函数 ----------
+void hidecursor() {
+    CONSOLE_CURSOR_INFO ci = {100, FALSE};
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ci);
+}
+
+void gotoxy(int x, int y) {
+    COORD coord = {(SHORT)x, (SHORT)y};
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+// ---------- 方块逻辑 ----------
+void newblock() {
+    curtype = rand() % 7;
+    curx = cols/2 - 1;
+    cury = 0;
+    for (int i = 0; i < 4; i++) {
+        int nx = curx + shapes[curtype][i][0];
+        int ny = cury + shapes[curtype][i][1];
+        if (ny >= 0 && board[ny][nx] != 0) gameover = 1;
+    }
+}
+
+int checkcollision(int type, int x, int y) {
+    for (int i = 0; i < 4; i++) {
+        int nx = x + shapes[type][i][0];
+        int ny = y + shapes[type][i][1];
+        if (nx < 0 || nx >= cols || ny >= rows) return 1;
+        if (ny >= 0 && board[ny][nx] != 0) return 1;
+    }
+    return 0;
+}
+
+void rotateblock() {
+    if (curtype == 3) return;
+    int tempshape[4][2];
+    for (int i = 0; i < 4; i++) {
+        int ox = shapes[curtype][i][0];
+        int oy = shapes[curtype][i][1];
+        tempshape[i][0] = 2 - oy;
+        tempshape[i][1] = ox;
+    }
+    int backup[4][2];
+    memcpy(backup, shapes[curtype], sizeof(backup));
+    memcpy(shapes[curtype], tempshape, sizeof(tempshape));
+    if (checkcollision(curtype, curx, cury))
+        memcpy(shapes[curtype], backup, sizeof(backup));
+}
+
+void checklines() {
+    for (int r = rows-1; r >= 0; r--) {
+        int full = 1;
+        for (int c = 0; c < cols; c++)
+            if (board[r][c] == 0) { full = 0; break; }
+        if (full) {
+            score += 100;
+            for (int sy = r; sy > 0; sy--)
+                for (int sx = 0; sx < cols; sx++)
+                    board[sy][sx] = board[sy-1][sx];
+            for (int sx = 0; sx < cols; sx++) board[0][sx] = 0;
+            r++;
+        }
+    }
+}
+
+void lockblock() {
+    for (int i = 0; i < 4; i++) {
+        int nx = curx + shapes[curtype][i][0];
+        int ny = cury + shapes[curtype][i][1];
+        if (ny >= 0) board[ny][nx] = 1;
+    }
+    checklines();
+    newblock();
+}
+
+void draw() {
+    int temp[rows][cols];
+    memcpy(temp, board, sizeof(board));
+    for (int i = 0; i < 4; i++) {
+        int nx = curx + shapes[curtype][i][0];
+        int ny = cury + shapes[curtype][i][1];
+        if (ny >= 0 && ny < rows && nx >= 0 && nx < cols) temp[ny][nx] = 1;
+    }
+    gotoxy(0,0);
+    for (int r = 0; r < rows; r++) {
+        printf("│");
+        for (int c = 0; c < cols; c++)
+            printf(temp[r][c] ? block_char : empty_char);
+        printf("│\n");
+    }
+    printf("└");
+    for (int c = 0; c < cols; c++) printf("——");
+    printf("┘\n");
+    printf("得分: %d\n", score);
+    printf("操作: A左 D右 S加速 W旋转\n");
+}
+
+// ---------- 主函数 ----------
+int main() {
+    srand((unsigned)time(NULL));
+    system("cls");
+    hidecursor();
+    newblock();
+    int timer = 0, speed = 20;
+    while (!gameover) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch == 'a' || ch == 'A') {
+                if (!checkcollision(curtype, curx-1, cury)) curx--;
+            }
+            if (ch == 'd' || ch == 'D') {
+                if (!checkcollision(curtype, curx+1, cury)) curx++;
+            }
+            if (ch == 's' || ch == 'S') {
+                if (!checkcollision(curtype, curx, cury+1)) cury++;
+            }
+            if (ch == 'w' || ch == 'W') rotateblock();
+        }
+        timer++;
+        if (timer >= speed) {
+            if (!checkcollision(curtype, curx, cury+1)) cury++;
+            else lockblock();
+            timer = 0;
+        }
+        draw();
+        Sleep(20);
+    }
+    system("cls");
+    printf("游戏结束！得分: %d\n", score);
+    system("pause");
+    return 0;
+}`;
+    // ═════════════════════════════════════════════════════
+    //  👆 替换到此为止
+    // ═════════════════════════════════════════════════════
+
+    const codeElement = document.getElementById('code');
+    codeElement.textContent = codeString;
+    hljs.highlightElement(codeElement);
+    window.currentCode = codeString;
+
+    document.getElementById('copyBtn').onclick = async () => {
+        await navigator.clipboard.writeText(window.currentCode);
+        alert('代码已复制');
+    };
+</script>
+</body>
+</html>
