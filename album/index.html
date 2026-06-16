@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -42,6 +43,11 @@
             padding-bottom: env(safe-area-inset-bottom);
             touch-action: manipulation;
             overflow: hidden;
+        }
+
+        /* 音频控件默认隐藏，避免影响布局 */
+        #bgMusic {
+            display: none;
         }
 
         .music-control {
@@ -134,6 +140,13 @@
             cursor: grab;
             touch-action: none;
             user-select: none;
+            /* 增加背景色占位，即使图片加载失败也能看到卡片轮廓 */
+            background-color: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
         .photo-card:active {
             cursor: grabbing;
@@ -143,6 +156,20 @@
             height: 100%;
             object-fit: cover;
             pointer-events: none;
+            /* 图片加载失败时隐藏破损图标，显示卡片背景 */
+            background-color: #f0f4f8;
+        }
+        /* 当图片无法加载时显示占位文字 */
+        .photo-card img::after {
+            content: "📷 图片加载失败";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: #f0f4f8;
+            color: #94a3b8;
+            font-size: 16px;
         }
 
         .footer-text {
@@ -171,13 +198,13 @@
 </head>
 <body>
     <a href="../" class="back-home">←</a>
-    <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
+    <div class="music-control" id="musicBtn" tabindex="0">🔇</div>
 
-    <!-- 已补全闭合标签，彻底修复解析错误 -->
-    <audio id="bgMusic" loop preload="auto">
+    <!-- ✅ 关键修复：audio 标签必须闭合 -->
+    <audio id="bgMusic" loop preload="auto" style="display:none;">
         <source src="../music/BGM3.mp3" type="audio/mpeg">
         你的浏览器不支持音频播放
-    
+    </audio>
 
     <div class="page-title">
         <h1>我的相册</h1>
@@ -185,6 +212,7 @@
     </div>
 
     <div class="card-stack-wrap" id="stackWrap">
+        <!-- 卡片顺序从下到上（1为最底层，12为最顶层） -->
         <div class="photo-card" data-index="12">
             <img src="https://s3.bmp.ovh/2026/06/16/UJaeQlPn.jpg" alt="照片12" loading="lazy">
         </div>
@@ -226,6 +254,7 @@
     <div class="footer-text">© 2026 宸宇的website</div>
 
     <script>
+        // ---------- 音乐控制 ----------
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
@@ -239,10 +268,12 @@
                 musicBtn.textContent = '🔇';
             }).catch(err => {
                 musicBtn.textContent = '🎵';
+                isPlaying = false;
             });
             document.removeEventListener('click', initMusic);
             document.removeEventListener('touchstart', initMusic);
         };
+        // 用户首次交互时启动音乐
         document.addEventListener('click', initMusic, { once: true });
         document.addEventListener('touchstart', initMusic, { once: true, passive: true });
 
@@ -250,18 +281,27 @@
             if (isPlaying) {
                 bgMusic.pause();
                 musicBtn.textContent = '🎵';
+                isPlaying = false;
             } else {
-                bgMusic.play().catch(() => initMusic());
+                bgMusic.play().catch(() => {
+                    // 如果播放失败，尝试初始化
+                    initMusic();
+                });
                 musicBtn.textContent = '🔇';
+                isPlaying = true;
             }
-            isPlaying = !isPlaying;
         }
         musicBtn.addEventListener('click', toggleMusic);
         musicBtn.addEventListener('touchstart', e => { e.preventDefault(); toggleMusic(); }, { passive: false });
+
         bgMusic.addEventListener('play', () => { isPlaying = true; musicBtn.textContent = '🔇'; });
         bgMusic.addEventListener('pause', () => { isPlaying = false; musicBtn.textContent = '🎵'; });
-        bgMusic.addEventListener('error', () => { musicBtn.textContent = '❌'; musicBtn.style.color = '#ff4d4f'; });
+        bgMusic.addEventListener('error', () => {
+            musicBtn.textContent = '❌';
+            musicBtn.style.color = '#ff4d4f';
+        });
 
+        // ---------- 卡片堆叠逻辑 ----------
         const wrap = document.getElementById('stackWrap');
         const cards = Array.from(document.querySelectorAll('.photo-card'));
         const total = cards.length;
@@ -298,6 +338,7 @@
             document.addEventListener('touchmove', dragMove, { passive: false });
             document.addEventListener('touchend', dragEnd);
         }
+
         function dragMove(e) {
             if (!dragCard) return;
             e.preventDefault();
@@ -306,6 +347,7 @@
             const dy = touch.clientY - dragStartY;
             dragCard.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px) rotate(0deg) scale(1.04)`;
         }
+
         function dragEnd() {
             if (!dragCard) return;
             dragCard = null;
@@ -315,6 +357,7 @@
             document.removeEventListener('touchmove', dragMove);
             document.removeEventListener('touchend', dragEnd);
         }
+
         cards.forEach(card => {
             card.addEventListener('mousedown', dragStart);
             card.addEventListener('touchstart', dragStart, { passive: false });
