@@ -57,7 +57,6 @@
             gap: 10px;
         }
 
-        /* 音乐按钮 */
         .ctrl-btn {
             width: 50px;
             height: 50px;
@@ -84,7 +83,6 @@
         }
         .ctrl-btn:active { transform: scale(0.92); }
 
-        /* 重置按钮 */
         .retract-btn {
             width: 44px;
             height: 44px;
@@ -109,7 +107,6 @@
         }
         .retract-btn:active { transform: scale(0.95); }
 
-        /* 长条进度条 */
         .progress-bar-wrap {
             width: 80px;
             height: 4px;
@@ -128,7 +125,7 @@
             height: 100%;
             background: var(--primary);
             border-radius: 4px;
-            transition: width 0.3s ease;
+            transition: width 0.2s ease;
         }
 
         .back-home {
@@ -175,6 +172,10 @@
         .page-title p {
             color: var(--text-secondary);
             font-size: clamp(13px, 3vmin, 16px);
+            margin-bottom: 4px;
+        }
+        .page-title .music-status {
+            margin-top: 6px;
         }
 
         .card-stack-wrap {
@@ -373,6 +374,7 @@
     <div class="page-title">
         <h1>我的相册</h1>
         <p>拖动抽出 · 点击放大 · 点击右上角收回</p>
+        <p class="music-status" id="musicStatus">🎵 点击页面或音乐按钮开始</p>
     </div>
 
     <div class="card-stack-wrap" id="stackWrap"></div>
@@ -605,67 +607,160 @@
         }
         init();
 
-        // ========== 音乐控制 + 长条进度条 ==========
+        // ========== 音乐控制 ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         const progressWrap = document.getElementById('progressWrap');
         const progressFill = document.getElementById('progressFill');
+        const musicStatus = document.getElementById('musicStatus');
 
         let isPlaying = false;
         let isReady = false;
+        let progressCheckInterval = null;
+        let loadAttempted = false;
 
-        // 更新进度条
-        function updateProgress(percent) {
-            progressFill.style.width = percent + '%';
+        function setStatus(text) {
+            musicStatus.textContent = text;
+        }
+
+        // 显示进度条
+        function showProgress(percent) {
+            const p = Math.min(percent, 100);
+            progressFill.style.width = p + '%';
             progressWrap.classList.add('show');
-            if (percent >= 100) {
-                setTimeout(() => {
-                    progressWrap.classList.remove('show');
-                }, 400);
+        }
+
+        // 隐藏进度条
+        function hideProgress() {
+            progressWrap.classList.remove('show');
+        }
+
+        // 更新进度（加载中）
+        function updateProgress(percent) {
+            const p = Math.min(percent, 100);
+            progressFill.style.width = p + '%';
+            progressWrap.classList.add('show');
+            if (p < 100) {
+                setStatus(`⏳ 音乐加载中 ${Math.round(p)}%`);
+            } else {
+                // 加载完成：进度条保持显示（100%），提示点击播放
                 isReady = true;
+                setStatus('✅ 点击音乐播放');
+                // 进度条保持显示，不隐藏
             }
         }
 
-        // 重置进度条
-        function resetProgress() {
-            progressFill.style.width = '0%';
-            progressWrap.classList.add('show');
-        }
-
-        // 开始加载
-        bgMusic.load();
-
-        bgMusic.addEventListener('progress', function() {
+        function checkBuffer() {
             if (bgMusic.buffered.length > 0) {
                 const bufferedEnd = bgMusic.buffered.end(bgMusic.buffered.length - 1);
                 const duration = bgMusic.duration;
                 if (duration > 0 && !isReady) {
-                    const percent = Math.min(Math.round((bufferedEnd / duration) * 100), 100);
+                    const percent = (bufferedEnd / duration) * 100;
                     updateProgress(percent);
                 }
             }
-        });
+        }
+
+        function startPolling() {
+            if (progressCheckInterval) clearInterval(progressCheckInterval);
+            progressCheckInterval = setInterval(checkBuffer, 500);
+        }
+
+        function stopPolling() {
+            if (progressCheckInterval) {
+                clearInterval(progressCheckInterval);
+                progressCheckInterval = null;
+            }
+        }
+
+        function loadAudio() {
+            if (loadAttempted) return;
+            loadAttempted = true;
+            bgMusic.load();
+            startPolling();
+            showProgress(0);
+            setStatus('⏳ 音乐加载中 0%');
+            setTimeout(() => {
+                if (!isReady) {
+                    bgMusic.load();
+                }
+            }, 5000);
+        }
+
+        // 尝试播放（用户手势触发）
+        function tryPlay() {
+            if (isReady && !isPlaying) {
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.textContent = '🔇';
+                    setStatus('🔊 音乐播放中');
+                    hideProgress(); // 播放后隐藏进度条
+                }).catch(() => {
+                    setStatus('✅ 点击音乐播放');
+                });
+            }
+        }
+
+        // 事件监听
+        bgMusic.addEventListener('progress', checkBuffer);
 
         bgMusic.addEventListener('canplaythrough', function() {
             isReady = true;
-            updateProgress(100);
-            if (!isPlaying) {
-                musicBtn.textContent = '🎵';
+            // 进度条显示100%，不隐藏
+            showProgress(100);
+            stopPolling();
+            setStatus('✅ 点击音乐播放');
+            // 如果用户已经点击过页面，尝试自动播放
+            if (loadAttempted) {
+                tryPlay();
             }
         });
 
         bgMusic.addEventListener('error', function() {
             musicBtn.textContent = '❌';
             musicBtn.style.color = '#ff4d4f';
-            progressWrap.classList.remove('show');
+            stopPolling();
+            hideProgress();
+            setStatus('❌ 音乐加载失败');
         });
 
+        bgMusic.addEventListener('play', () => {
+            isPlaying = true;
+            musicBtn.textContent = '🔇';
+            setStatus('🔊 音乐播放中');
+            hideProgress();
+        });
+        bgMusic.addEventListener('pause', () => {
+            isPlaying = false;
+            musicBtn.textContent = '🎵';
+            setStatus('⏸️ 音乐暂停');
+        });
+        bgMusic.addEventListener('stalled', function() {
+            if (isPlaying) {
+                bgMusic.play().catch(() => {});
+            }
+        });
+        bgMusic.addEventListener('ended', function() {
+            if (isPlaying) {
+                bgMusic.play().catch(() => {});
+            }
+        });
+
+        // 点击音乐按钮
         function toggleMusic() {
+            if (!loadAttempted) {
+                loadAudio();
+                setTimeout(() => {
+                    if (isReady) {
+                        tryPlay();
+                    }
+                }, 100);
+                return;
+            }
+
             if (!isReady) {
-                resetProgress();
-                if (bgMusic.readyState === 0) {
-                    bgMusic.load();
-                }
+                showProgress(0);
+                setStatus('⏳ 加载中...');
                 return;
             }
 
@@ -673,12 +768,17 @@
                 bgMusic.pause();
                 musicBtn.textContent = '🎵';
                 isPlaying = false;
+                setStatus('⏸️ 音乐暂停');
+                // 暂停时进度条保持隐藏
             } else {
                 bgMusic.play().then(() => {
                     musicBtn.textContent = '🔇';
                     isPlaying = true;
+                    setStatus('🔊 音乐播放中');
+                    hideProgress();
                 }).catch(() => {
                     musicBtn.textContent = '🎵';
+                    setStatus('✅ 点击音乐播放');
                 });
             }
         }
@@ -689,21 +789,17 @@
             toggleMusic();
         }, { passive: false });
 
-        bgMusic.addEventListener('play', () => {
-            isPlaying = true;
-            musicBtn.textContent = '🔇';
-        });
-        bgMusic.addEventListener('pause', () => {
-            isPlaying = false;
-            musicBtn.textContent = '🎵';
-        });
-
+        // 首次用户交互
         function firstInteraction() {
-            if (isReady && !isPlaying) {
-                bgMusic.play().then(() => {
-                    isPlaying = true;
-                    musicBtn.textContent = '🔇';
-                }).catch(() => {});
+            if (!loadAttempted) {
+                loadAudio();
+                // 监听加载完成，然后尝试播放
+                bgMusic.addEventListener('canplaythrough', function onReady() {
+                    bgMusic.removeEventListener('canplaythrough', onReady);
+                    tryPlay();
+                }, { once: true });
+            } else {
+                tryPlay();
             }
             document.removeEventListener('click', firstInteraction);
             document.removeEventListener('touchstart', firstInteraction);
@@ -711,12 +807,22 @@
         document.addEventListener('click', firstInteraction, { once: true });
         document.addEventListener('touchstart', firstInteraction, { once: true, passive: true });
 
+        // 自动加载（无操作）
         setTimeout(() => {
-            if (!isReady && bgMusic.readyState === 0) {
-                bgMusic.load();
-                resetProgress();
+            if (!loadAttempted) {
+                loadAudio();
             }
         }, 3000);
+
+        // 页面可见性变化
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && isReady && !isPlaying && loadAttempted) {
+                tryPlay();
+            }
+        });
+
+        // 初始状态
+        setStatus('🎵 点击页面或音乐按钮开始');
     </script>
 </body>
 </html>
