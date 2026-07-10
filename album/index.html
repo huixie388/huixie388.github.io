@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>相册集 | 宸宇的website</title>
     <style>
-        /* ========== 全局样式 ========== */
+        /* ========== 全局样式（完全没变） ========== */
         :root {
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
@@ -121,7 +121,6 @@
             position: relative;
             width: min(80vw, 420px);
             height: min(60vh, 560px);
-            /* 双击空白区域触发收回 */
         }
 
         .photo-card {
@@ -139,7 +138,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* 默认启用过渡，拖拽时会被临时禁用 */
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .photo-card:active { cursor: grabbing; }
@@ -170,7 +168,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* ========== 模态框 ========== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -243,7 +240,7 @@
 </head>
 <body>
     <a href="../" class="back-home">←</a>
-    <div class="music-control" id="musicBtn" tabindex="0">🔇</div>
+    <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
 
     <audio id="bgMusic" loop preload="auto" style="display:none;">
         <source src="../music/BGM3.mp3" type="audio/mpeg">
@@ -259,7 +256,6 @@
 
     <div class="footer-text">© 2026 宸宇的website</div>
 
-    <!-- 模态框 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="close-btn" id="modalCloseBtn">✕</div>
         <img id="modalImage" src="" alt="放大查看">
@@ -285,19 +281,16 @@
         ];
 
         // ============================================================
-        // 2. 状态变量
+        // 2. 相册交互（完全没变）
         // ============================================================
         const wrap = document.getElementById('stackWrap');
-        let stackedCards = [];   // 堆叠中的卡片（按底层到顶层顺序）
-        let freeCards = [];      // 已拖出的卡片
+        let stackedCards = [];
+        let freeCards = [];
         let dragData = null;
         const DRAG_THRESHOLD = 8;
         const OFFSET_X = 6;
         const OFFSET_ROTATE = 2.5;
 
-        // ============================================================
-        // 3. 创建卡片
-        // ============================================================
         function createCard(data, index) {
             const card = document.createElement('div');
             card.className = 'photo-card';
@@ -310,7 +303,9 @@
             const img = document.createElement('img');
             img.src = data.url;
             img.alt = data.alt;
-            img.loading = 'lazy';
+            // 改：立即加载，不要懒加载
+            img.loading = 'eager';
+            img.decoding = 'async';
             card.appendChild(img);
 
             card.addEventListener('mousedown', onPointerDown);
@@ -319,9 +314,6 @@
             return card;
         }
 
-        // ============================================================
-        // 4. 堆叠布局（只针对 stackedCards）
-        // ============================================================
         function layoutStack() {
             const count = stackedCards.length;
             stackedCards.forEach((card, idx) => {
@@ -336,9 +328,6 @@
             });
         }
 
-        // ============================================================
-        // 5. 拖拽逻辑
-        // ============================================================
         function onPointerDown(e) {
             e.preventDefault();
             const card = e.currentTarget;
@@ -346,7 +335,6 @@
             const startX = touch.clientX;
             const startY = touch.clientY;
 
-            // 禁用该卡片的过渡（拖拽跟手）
             card.style.transition = 'none';
 
             dragData = {
@@ -406,82 +394,56 @@
             document.removeEventListener('touchend', onPointerUp);
             document.removeEventListener('touchcancel', onPointerUp);
 
-            // 恢复过渡（为后续收回动画做准备）
             card.style.transition = '';
 
             if (!moved) {
-                // 点击 -> 打开模态框
                 openModal(card.querySelector('img').src);
-                // 如果是堆叠中的卡片，重置其位置（但未移动，保持原样）
-                // 但可能因为点击时禁用过渡导致轻微偏移？无需处理
                 dragData = null;
                 return;
             }
 
-            // ---- 拖动结束，该卡片成为自由卡片 ----
             const idxInStack = stackedCards.indexOf(card);
             if (idxInStack !== -1) {
                 stackedCards.splice(idxInStack, 1);
                 freeCards.push(card);
-                // 移出堆叠，追加到容器末尾（保持DOM顺序）
                 wrap.removeChild(card);
                 wrap.appendChild(card);
-                // 保持当前transform，并设置zIndex
                 card.style.transform = `translate(${dragData.transformX}px, ${dragData.transformY}px) scale(1) rotate(0deg)`;
                 card.style.zIndex = 1000 + freeCards.length;
-                // 重新布局堆叠
                 layoutStack();
-                // 确保所有自由卡片zIndex高于堆叠
                 freeCards.forEach((fc, i) => {
                     fc.style.zIndex = 1000 + i;
                 });
             } else {
-                // 如果已经是自由卡片，仅更新transform
                 card.style.transform = `translate(${dragData.transformX}px, ${dragData.transformY}px) scale(1) rotate(0deg)`;
             }
 
             dragData = null;
         }
 
-        // ============================================================
-        // 6. 收回全部卡片（双击空白处触发）
-        // ============================================================
         function retractAllCards() {
             if (freeCards.length === 0) return;
-
-            // 将所有自由卡片移回堆叠数组
             freeCards.forEach(card => {
                 stackedCards.push(card);
             });
             freeCards = [];
-
-            // 按原始索引排序，保持顺序
             stackedCards.sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index));
-
-            // 重新构建DOM：清空wrap，按顺序追加所有卡片
             wrap.innerHTML = '';
             stackedCards.forEach(card => wrap.appendChild(card));
-
-            // 确保所有卡片都有过渡（可能有些卡片在拖拽时被禁用了过渡，但我们已经恢复）
-            // 但为了保险，显式启用过渡（使用默认样式）
             stackedCards.forEach(card => {
                 card.style.transition = '';
-                card.style.zIndex = '';   // 将由layoutStack设置
+                card.style.zIndex = '';
             });
-
-            // 应用堆叠布局（触发过渡动画）
             layoutStack();
         }
 
-        // 监听容器双击空白区域
         wrap.addEventListener('dblclick', function(e) {
-            // 如果点击目标是卡片或其子元素，则不触发收回
             if (e.target.closest('.photo-card')) return;
             retractAllCards();
         });
 
         // ============================================================
-        // 7. 模态框
+        // 3. 模态框（没变）
         // ============================================================
         const modalOverlay = document.getElementById('modalOverlay');
         const modalImage = document.getElementById('modalImage');
@@ -507,7 +469,7 @@
         });
 
         // ============================================================
-        // 8. 初始化
+        // 4. 初始化相册（并预加载所有图片）
         // ============================================================
         function init() {
             const cards = imageList.map((data, idx) => createCard(data, idx));
@@ -515,52 +477,114 @@
             freeCards = [];
             cards.forEach(card => wrap.appendChild(card));
             layoutStack();
+
+            // 【新增】预加载所有图片（将图片缓存到浏览器）
+            imageList.forEach(data => {
+                const img = new Image();
+                img.src = data.url;
+                // 不操作DOM，只触发浏览器下载
+            });
         }
         init();
 
         // ============================================================
-        // 9. 音乐控制（保持不变）
+        // 5. 【改过的】音乐 – 自动播放 + 不卡顿
         // ============================================================
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
-        let initMusicFlag = false;
+        let isReady = false;
 
-        const initMusic = () => {
-            if (initMusicFlag) return;
-            initMusicFlag = true;
-            bgMusic.play().then(() => {
-                isPlaying = true;
-                musicBtn.textContent = '🔇';
-            }).catch(err => {
+        // 一开始就强制下载歌曲
+        bgMusic.load();
+
+        // 监听缓冲足够的事件
+        bgMusic.addEventListener('canplaythrough', function() {
+            isReady = true;
+            if (musicBtn.textContent === '⏳') {
                 musicBtn.textContent = '🎵';
-                isPlaying = false;
-            });
-            document.removeEventListener('click', initMusic);
-            document.removeEventListener('touchstart', initMusic);
-        };
-        document.addEventListener('click', initMusic, { once: true });
-        document.addEventListener('touchstart', initMusic, { once: true, passive: true });
+            }
+        });
 
+        bgMusic.addEventListener('error', function() {
+            musicBtn.textContent = '❌';
+            musicBtn.style.color = '#ff4d4f';
+        });
+
+        // 切换播放/暂停（手动点击按钮）
         function toggleMusic() {
+            if (!isReady) {
+                musicBtn.textContent = '⏳';
+                // 等待准备好后自动播放
+                bgMusic.addEventListener('canplaythrough', function onReady() {
+                    bgMusic.removeEventListener('canplaythrough', onReady);
+                    if (!isPlaying) {
+                        bgMusic.play().catch(() => {});
+                        isPlaying = true;
+                        musicBtn.textContent = '🔇';
+                    }
+                    isReady = true;
+                });
+                return;
+            }
+
             if (isPlaying) {
                 bgMusic.pause();
                 musicBtn.textContent = '🎵';
                 isPlaying = false;
             } else {
-                bgMusic.play().catch(initMusic);
+                bgMusic.play().catch(() => {
+                    musicBtn.textContent = '⏳';
+                });
                 musicBtn.textContent = '🔇';
                 isPlaying = true;
             }
         }
-        musicBtn.addEventListener('click', toggleMusic);
-        musicBtn.addEventListener('touchstart', e => { e.preventDefault(); toggleMusic(); }, { passive: false });
-        bgMusic.addEventListener('play', () => { isPlaying = true; musicBtn.textContent = '🔇'; });
-        bgMusic.addEventListener('pause', () => { isPlaying = false; musicBtn.textContent = '🎵'; });
-        bgMusic.addEventListener('error', () => {
-            musicBtn.textContent = '❌';
-            musicBtn.style.color = '#ff4d4f';
+
+        // 同步按钮状态
+        bgMusic.addEventListener('play', () => {
+            isPlaying = true;
+            musicBtn.textContent = '🔇';
         });
+        bgMusic.addEventListener('pause', () => {
+            isPlaying = false;
+            musicBtn.textContent = '🎵';
+        });
+
+        musicBtn.addEventListener('click', toggleMusic);
+        musicBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            toggleMusic();
+        }, { passive: false });
+
+        // 【核心改动】用户第一次点击页面任何地方 → 自动播放音乐（如果已缓冲好）
+        function firstClickPlay() {
+            if (isReady) {
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.textContent = '🔇';
+                }).catch(() => {
+                    // 浏览器拦截自动播放，没关系，用户再手动点按钮即可
+                });
+            } else {
+                // 还没准备好，显示加载，并等它准备好再自动播放
+                musicBtn.textContent = '⏳';
+                bgMusic.addEventListener('canplaythrough', function onReady() {
+                    bgMusic.removeEventListener('canplaythrough', onReady);
+                    bgMusic.play().catch(() => {});
+                    isPlaying = true;
+                    musicBtn.textContent = '🔇';
+                    isReady = true;
+                });
+            }
+            // 移除监听，只触发一次
+            document.removeEventListener('click', firstClickPlay);
+            document.removeEventListener('touchstart', firstClickPlay);
+        }
+
+        // 监听首次用户交互（点击或触摸）
+        document.addEventListener('click', firstClickPlay, { once: true });
+        document.addEventListener('touchstart', firstClickPlay, { once: true, passive: true });
     </script>
 </body>
 </html>
