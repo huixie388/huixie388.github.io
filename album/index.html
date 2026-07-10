@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -46,7 +47,6 @@
 
         #bgMusic { display: none; }
 
-        /* ---------- 右上角按钮组 ---------- */
         .top-right-group {
             position: fixed;
             top: 20px;
@@ -644,7 +644,7 @@
         }
         init();
 
-        // ========== 音乐控制（适配微信） ==========
+        // ========== 音乐控制（轮询进度，适配微信） ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         const musicWrapper = document.getElementById('musicWrapper');
@@ -653,15 +653,21 @@
 
         let isPlaying = false;
         let isReady = false;
+        let progressInterval = null;
+        let loadAttempted = false;
 
         function updateProgress(percent) {
             const offset = circumference - (percent / 100) * circumference;
             fgCircle.style.strokeDashoffset = offset;
             musicWrapper.classList.add('show-progress');
             if (percent >= 100) {
+                // 下载完成，隐藏背景圈
                 setTimeout(() => {
                     musicWrapper.classList.remove('show-progress');
-                }, 500);
+                }, 400);
+                isReady = true;
+                // 尝试自动播放（仅在用户手势后有效，但我们会多次尝试）
+                tryAutoPlay();
             }
         }
 
@@ -670,10 +676,7 @@
             musicWrapper.classList.add('show-progress');
         }
 
-        // 开始加载音频（但不会自动播放）
-        bgMusic.load();
-
-        bgMusic.addEventListener('progress', function() {
+        function checkBuffer() {
             if (bgMusic.buffered.length > 0) {
                 const bufferedEnd = bgMusic.buffered.end(bgMusic.buffered.length - 1);
                 const duration = bgMusic.duration;
@@ -682,26 +685,59 @@
                     updateProgress(percent);
                 }
             }
-        });
+        }
 
-        bgMusic.addEventListener('canplaythrough', function() {
-            isReady = true;
-            updateProgress(100);
-            // 不自动播放，等待用户点击
-            musicWrapper.classList.remove('show-progress');
-            // 按钮显示为“播放”状态（🎵），用户点击才播放
-            musicBtn.textContent = '🎵';
-        });
+        // 轮询缓冲
+        function startProgressPolling() {
+            if (progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(checkBuffer, 500);
+        }
 
-        bgMusic.addEventListener('error', function() {
-            musicBtn.textContent = '❌';
-            musicBtn.style.color = '#ff4d4f';
-            musicWrapper.classList.remove('show-progress');
-        });
+        // 尝试播放（如果已就绪且未播放）
+        function tryAutoPlay() {
+            if (isReady && !isPlaying) {
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.textContent = '🔇';
+                }).catch(() => {
+                    // 自动播放被拦截，用户手动点击按钮即可
+                    musicBtn.textContent = '🎵';
+                });
+            }
+        }
 
-        // 点击音乐按钮切换播放/暂停
+        // 用户首次点击（任意位置）触发加载
+        function firstInteraction() {
+            if (!loadAttempted) {
+                loadAttempted = true;
+                bgMusic.load(); // 强制开始加载
+                startProgressPolling();
+                // 同时尝试播放（如果已缓存可能立即成功）
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.textContent = '🔇';
+                    // 如果已经播放，停止轮询（但保留）
+                }).catch(() => {});
+            }
+            document.removeEventListener('click', firstInteraction);
+            document.removeEventListener('touchstart', firstInteraction);
+        }
+
+        // 绑定首次交互事件
+        document.addEventListener('click', firstInteraction, { once: true });
+        document.addEventListener('touchstart', firstInteraction, { once: true, passive: true });
+
+        // 点击音乐按钮切换
         function toggleMusic() {
+            if (!loadAttempted) {
+                // 如果还没开始加载，触发加载
+                loadAttempted = true;
+                bgMusic.load();
+                startProgressPolling();
+            }
+
             if (!isReady) {
+                // 还没加载完，显示进度
                 resetProgress();
                 return;
             }
@@ -711,19 +747,23 @@
                 musicBtn.textContent = '🎵';
                 isPlaying = false;
             } else {
-                // 尝试播放（在微信中，用户手势触发的 play() 一定成功）
                 bgMusic.play().then(() => {
                     musicBtn.textContent = '🔇';
                     isPlaying = true;
-                }).catch((err) => {
-                    console.warn('播放失败:', err);
-                    // 如果播放失败，可能仍需要用户手势，但不影响
+                }).catch(() => {
+                    // 播放失败，可能是权限问题，忽略
                     musicBtn.textContent = '🎵';
-                    isPlaying = false;
                 });
             }
         }
 
+        musicBtn.addEventListener('click', toggleMusic);
+        musicBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            toggleMusic();
+        }, { passive: false });
+
+        // 监听播放状态同步按钮
         bgMusic.addEventListener('play', () => {
             isPlaying = true;
             musicBtn.textContent = '🔇';
@@ -732,29 +772,20 @@
             isPlaying = false;
             musicBtn.textContent = '🎵';
         });
+        bgMusic.addEventListener('error', () => {
+            musicBtn.textContent = '❌';
+            musicBtn.style.color = '#ff4d4f';
+            if (progressInterval) clearInterval(progressInterval);
+        });
 
-        musicBtn.addEventListener('click', toggleMusic);
-        musicBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            toggleMusic();
-        }, { passive: false });
-
-        // 首次点击页面任何地方（如相册、空白）尝试自动播放（仅一次）
-        // 微信中必须用户手势，所以这里只是尝试，如果失败就忽略
-        function firstInteraction() {
-            if (isReady && !isPlaying) {
-                bgMusic.play().then(() => {
-                    isPlaying = true;
-                    musicBtn.textContent = '🔇';
-                }).catch(() => {
-                    // 自动播放被拦截，用户自己点击音乐按钮即可
-                });
+        // 如果用户没有点击任何地方，但页面加载后5秒自动尝试加载（以防用户无操作）
+        setTimeout(() => {
+            if (!loadAttempted) {
+                loadAttempted = true;
+                bgMusic.load();
+                startProgressPolling();
             }
-            document.removeEventListener('click', firstInteraction);
-            document.removeEventListener('touchstart', firstInteraction);
-        }
-        document.addEventListener('click', firstInteraction, { once: true });
-        document.addEventListener('touchstart', firstInteraction, { once: true, passive: true });
+        }, 3000);
     </script>
 </body>
 </html>
