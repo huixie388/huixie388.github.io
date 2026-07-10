@@ -36,7 +36,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 50px 20px;
+            padding: 20px 12px;
             color: var(--text-main);
             padding-bottom: env(safe-area-inset-bottom);
             touch-action: manipulation;
@@ -46,10 +46,90 @@
 
         #bgMusic { display: none; }
 
-        .ctrl-btn {
+        /* ---------- 右上角按钮组 ---------- */
+        .top-right-group {
             position: fixed;
-            width: 50px;
-            height: 50px;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* 音乐按钮 + 进度圆环 */
+        .music-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .music-wrapper svg {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 64px;
+            height: 64px;
+            transform: rotate(-90deg);
+        }
+        .music-wrapper svg circle {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-dasharray: 175.93;
+            stroke-dashoffset: 175.93;
+            transition: stroke-dashoffset 0.3s ease, opacity 0.5s ease;
+        }
+        .music-wrapper svg circle.bg-circle {
+            stroke: rgba(66, 153, 225, 0.15);
+            stroke-dashoffset: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .music-wrapper.show-progress svg circle.bg-circle {
+            opacity: 1;
+        }
+        .music-wrapper.show-progress svg circle.fg-circle {
+            stroke-dashoffset: 175.93;
+        }
+
+        .ctrl-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--primary);
+            outline: none;
+            font-family: "Inter", "微软雅黑", system-ui, sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+            user-select: none;
+            z-index: 2;
+            position: relative;
+        }
+        .ctrl-btn:hover {
+            transform: scale(1.08);
+            box-shadow: var(--shadow-primary);
+            border-color: var(--primary);
+        }
+        .ctrl-btn:active { transform: scale(0.92); }
+
+        /* 收回按钮 - 放在音乐按钮下面 */
+        .retract-btn {
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -58,41 +138,21 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 999;
             font-size: 20px;
             color: var(--primary);
             outline: none;
-            font-family: "Inter", "微软雅黑", system-ui, sans-serif;
-            font-weight: 600;
             transition: all 0.3s;
-            text-decoration: none;
             user-select: none;
+            flex-shrink: 0;
         }
-        .ctrl-btn:hover {
+        .retract-btn:hover {
             transform: scale(1.1);
             box-shadow: var(--shadow-primary);
             border-color: var(--primary);
         }
-        .ctrl-btn:active { transform: scale(0.95); }
-        .ctrl-btn.loading {
-            border-radius: 30px;
-            width: auto;
-            padding: 0 18px;
-            font-size: 15px;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
+        .retract-btn:active { transform: scale(0.95); }
 
-        .music-control {
-            top: 20px;
-            right: 20px;
-        }
-        .retract-btn {
-            bottom: 30px;
-            right: 20px;
-            font-size: 22px;
-        }
-
+        /* 返回按钮 - 左上角 */
         .back-home {
             position: fixed;
             top: 20px;
@@ -111,6 +171,7 @@
             font-size: 20px;
             color: var(--primary);
             text-decoration: none;
+            transition: all 0.3s;
         }
         .back-home:hover {
             transform: scale(1.1);
@@ -120,13 +181,14 @@
 
         .page-title {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             pointer-events: none;
+            width: 100%;
         }
         .page-title h1 {
-            font-size: clamp(28px, 7vmin, 42px);
+            font-size: clamp(24px, 6vmin, 42px);
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             background: linear-gradient(90deg, var(--text-main), var(--primary));
             -webkit-background-clip: text;
             background-clip: text;
@@ -139,8 +201,10 @@
 
         .card-stack-wrap {
             position: relative;
-            width: min(80vw, 420px);
-            height: min(60vh, 560px);
+            width: 92vw;
+            max-width: 420px;
+            height: 70vh;
+            max-height: 560px;
         }
 
         .photo-card {
@@ -243,27 +307,48 @@
         }
 
         @media (max-width: 768px) {
-            body { padding: 30px 12px; }
-            .ctrl-btn, .back-home {
+            body { padding: 16px 10px; }
+            .back-home {
                 width: 44px;
                 height: 44px;
                 font-size: 17px;
                 top: 14px;
+                left: 14px;
             }
-            .ctrl-btn.loading {
-                height: 44px;
-                font-size: 13px;
-                padding: 0 14px;
-                border-radius: 30px;
+            .top-right-group {
+                top: 14px;
+                right: 14px;
+                gap: 12px;
+            }
+            .music-wrapper {
+                width: 48px;
+                height: 48px;
+            }
+            .music-wrapper svg {
+                width: 56px;
+                height: 56px;
+                top: -4px;
+                left: -4px;
+            }
+            .music-wrapper svg circle {
+                stroke-width: 3;
+            }
+            .ctrl-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 19px;
             }
             .retract-btn {
-                bottom: 20px;
-                right: 14px;
-                font-size: 19px;
-                width: 44px;
-                height: 44px;
+                width: 40px;
+                height: 40px;
+                font-size: 17px;
             }
-            .page-title { margin-bottom: 30px; }
+            .page-title { margin-bottom: 16px; }
+            .card-stack-wrap {
+                width: 95vw;
+                height: 72vh;
+                max-height: 600px;
+            }
             .modal-overlay .close-btn {
                 top: 20px;
                 right: 20px;
@@ -277,14 +362,49 @@
             }
         }
         @media (max-width: 375px) {
-            .ctrl-btn.loading { font-size: 11px; padding: 0 10px; }
+            .top-right-group {
+                top: 12px;
+                right: 12px;
+                gap: 10px;
+            }
+            .music-wrapper {
+                width: 42px;
+                height: 42px;
+            }
+            .music-wrapper svg {
+                width: 50px;
+                height: 50px;
+                top: -4px;
+                left: -4px;
+            }
+            .ctrl-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 17px;
+            }
+            .retract-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 15px;
+            }
+            .card-stack-wrap { height: 68vh; }
         }
     </style>
 </head>
 <body>
     <a href="../" class="back-home">←</a>
-    <div class="ctrl-btn music-control" id="musicBtn" tabindex="0">🎵</div>
-    <div class="ctrl-btn retract-btn" id="retractBtn" tabindex="0" title="收回全部照片">↩️</div>
+
+    <!-- 右上角按钮组：音乐圆环 + 收回按钮 -->
+    <div class="top-right-group">
+        <div class="music-wrapper" id="musicWrapper">
+            <svg>
+                <circle class="bg-circle" cx="32" cy="32" r="28" />
+                <circle class="fg-circle" cx="32" cy="32" r="28" />
+            </svg>
+            <div class="ctrl-btn" id="musicBtn" tabindex="0">🎵</div>
+        </div>
+        <div class="retract-btn" id="retractBtn" tabindex="0" title="收回全部照片">↩️</div>
+    </div>
 
     <audio id="bgMusic" loop preload="auto" style="display:none;">
         <source src="../music/BGM3.mp3" type="audio/mpeg">
@@ -293,7 +413,7 @@
 
     <div class="page-title">
         <h1>我的相册</h1>
-        <p>拖动抽出 · 点击放大 · 点击右下角收回</p>
+        <p>拖动抽出 · 点击放大 · 点击右上角收回</p>
     </div>
 
     <div class="card-stack-wrap" id="stackWrap"></div>
@@ -522,10 +642,31 @@
         }
         init();
 
+        // ========== 音乐控制（进度圆环版） ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
+        const musicWrapper = document.getElementById('musicWrapper');
+        const fgCircle = document.querySelector('.fg-circle');
+        const circumference = 175.93;
+
         let isPlaying = false;
         let isReady = false;
+
+        function updateProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            fgCircle.style.strokeDashoffset = offset;
+            musicWrapper.classList.add('show-progress');
+            if (percent >= 100) {
+                setTimeout(() => {
+                    musicWrapper.classList.remove('show-progress');
+                }, 500);
+            }
+        }
+
+        function resetProgress() {
+            fgCircle.style.strokeDashoffset = circumference;
+            musicWrapper.classList.add('show-progress');
+        }
 
         bgMusic.load();
 
@@ -533,37 +674,38 @@
             if (bgMusic.buffered.length > 0) {
                 const bufferedEnd = bgMusic.buffered.end(bgMusic.buffered.length - 1);
                 const duration = bgMusic.duration;
-                if (duration > 0) {
-                    const percent = Math.round((bufferedEnd / duration) * 100);
-                    if (!isReady) {
-                        musicBtn.textContent = `⏳${percent}%`;
-                        musicBtn.classList.add('loading');
-                    }
+                if (duration > 0 && !isReady) {
+                    const percent = Math.min(Math.round((bufferedEnd / duration) * 100), 100);
+                    updateProgress(percent);
                 }
             }
         });
 
         bgMusic.addEventListener('canplaythrough', function() {
             isReady = true;
-            musicBtn.classList.remove('loading');
+            updateProgress(100);
             bgMusic.play().then(() => {
                 isPlaying = true;
                 musicBtn.textContent = '🔇';
+                setTimeout(() => {
+                    musicWrapper.classList.remove('show-progress');
+                }, 400);
             }).catch(() => {
                 musicBtn.textContent = '🎵';
                 isPlaying = false;
+                musicWrapper.classList.remove('show-progress');
             });
         });
 
         bgMusic.addEventListener('error', function() {
             musicBtn.textContent = '❌';
             musicBtn.style.color = '#ff4d4f';
-            musicBtn.classList.remove('loading');
+            musicWrapper.classList.remove('show-progress');
         });
 
         function toggleMusic() {
             if (!isReady) {
-                musicBtn.textContent = '⏳';
+                resetProgress();
                 return;
             }
 
@@ -576,7 +718,7 @@
                     musicBtn.textContent = '🔇';
                     isPlaying = true;
                 }).catch(() => {
-                    musicBtn.textContent = '⏳';
+                    resetProgress();
                     bgMusic.load();
                 });
             }
@@ -585,12 +727,10 @@
         bgMusic.addEventListener('play', () => {
             isPlaying = true;
             musicBtn.textContent = '🔇';
-            musicBtn.classList.remove('loading');
         });
         bgMusic.addEventListener('pause', () => {
             isPlaying = false;
             musicBtn.textContent = '🎵';
-            musicBtn.classList.remove('loading');
         });
 
         musicBtn.addEventListener('click', toggleMusic);
