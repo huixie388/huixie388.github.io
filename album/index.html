@@ -75,8 +75,12 @@
         }
         .ctrl-btn:active { transform: scale(0.95); }
         .ctrl-btn.loading {
-            font-size: 13px;
-            letter-spacing: 0.3px;
+            border-radius: 30px;
+            width: auto;
+            padding: 0 18px;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .music-control {
@@ -85,7 +89,7 @@
         }
         .retract-btn {
             bottom: 30px;
-            left: 20px;
+            right: 20px;
             font-size: 22px;
         }
 
@@ -240,16 +244,24 @@
 
         @media (max-width: 768px) {
             body { padding: 30px 12px; }
-            .ctrl-btn, .music-control, .back-home, .retract-btn {
+            .ctrl-btn, .back-home {
                 width: 44px;
                 height: 44px;
                 font-size: 17px;
                 top: 14px;
             }
+            .ctrl-btn.loading {
+                height: 44px;
+                font-size: 13px;
+                padding: 0 14px;
+                border-radius: 30px;
+            }
             .retract-btn {
                 bottom: 20px;
-                left: 14px;
+                right: 14px;
                 font-size: 19px;
+                width: 44px;
+                height: 44px;
             }
             .page-title { margin-bottom: 30px; }
             .modal-overlay .close-btn {
@@ -265,7 +277,7 @@
             }
         }
         @media (max-width: 375px) {
-            .ctrl-btn.loading { font-size: 11px; }
+            .ctrl-btn.loading { font-size: 11px; padding: 0 10px; }
         }
     </style>
 </head>
@@ -281,7 +293,7 @@
 
     <div class="page-title">
         <h1>我的相册</h1>
-        <p>拖动抽出 · 点击放大 · 点击左下角收回</p>
+        <p>拖动抽出 · 点击放大 · 点击右下角收回</p>
     </div>
 
     <div class="card-stack-wrap" id="stackWrap"></div>
