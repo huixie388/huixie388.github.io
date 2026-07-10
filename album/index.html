@@ -36,7 +36,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px 12px;
+            padding: 40px 20px;
             color: var(--text-main);
             padding-bottom: env(safe-area-inset-bottom);
             touch-action: manipulation;
@@ -55,10 +55,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
-        /* 音乐按钮 + 进度圆环 */
         .music-wrapper {
             position: relative;
             width: 56px;
@@ -68,10 +67,10 @@
         }
         .music-wrapper svg {
             position: absolute;
-            top: -4px;
-            left: -4px;
-            width: 64px;
-            height: 64px;
+            top: -3px;
+            left: -3px;
+            width: 62px;
+            height: 62px;
             transform: rotate(-90deg);
         }
         .music-wrapper svg circle {
@@ -126,7 +125,6 @@
         }
         .ctrl-btn:active { transform: scale(0.92); }
 
-        /* 收回按钮 - 放在音乐按钮下面 */
         .retract-btn {
             width: 44px;
             height: 44px;
@@ -152,7 +150,6 @@
         }
         .retract-btn:active { transform: scale(0.95); }
 
-        /* 返回按钮 - 左上角 */
         .back-home {
             position: fixed;
             top: 20px;
@@ -181,14 +178,14 @@
 
         .page-title {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
             pointer-events: none;
             width: 100%;
         }
         .page-title h1 {
-            font-size: clamp(24px, 6vmin, 42px);
+            font-size: clamp(28px, 7vmin, 42px);
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             background: linear-gradient(90deg, var(--text-main), var(--primary));
             -webkit-background-clip: text;
             background-clip: text;
@@ -201,10 +198,8 @@
 
         .card-stack-wrap {
             position: relative;
-            width: 92vw;
-            max-width: 420px;
-            height: 70vh;
-            max-height: 560px;
+            width: min(80vw, 420px);
+            height: min(60vh, 560px);
         }
 
         .photo-card {
@@ -307,7 +302,7 @@
         }
 
         @media (max-width: 768px) {
-            body { padding: 16px 10px; }
+            body { padding: 30px 16px; }
             .back-home {
                 width: 44px;
                 height: 44px;
@@ -318,17 +313,17 @@
             .top-right-group {
                 top: 14px;
                 right: 14px;
-                gap: 12px;
+                gap: 10px;
             }
             .music-wrapper {
                 width: 48px;
                 height: 48px;
             }
             .music-wrapper svg {
-                width: 56px;
-                height: 56px;
-                top: -4px;
-                left: -4px;
+                width: 54px;
+                height: 54px;
+                top: -3px;
+                left: -3px;
             }
             .music-wrapper svg circle {
                 stroke-width: 3;
@@ -343,11 +338,10 @@
                 height: 40px;
                 font-size: 17px;
             }
-            .page-title { margin-bottom: 16px; }
+            .page-title { margin-bottom: 30px; }
             .card-stack-wrap {
-                width: 95vw;
-                height: 72vh;
-                max-height: 600px;
+                width: min(85vw, 420px);
+                height: min(55vh, 560px);
             }
             .modal-overlay .close-btn {
                 top: 20px;
@@ -365,17 +359,20 @@
             .top-right-group {
                 top: 12px;
                 right: 12px;
-                gap: 10px;
+                gap: 8px;
             }
             .music-wrapper {
                 width: 42px;
                 height: 42px;
             }
             .music-wrapper svg {
-                width: 50px;
-                height: 50px;
-                top: -4px;
-                left: -4px;
+                width: 48px;
+                height: 48px;
+                top: -3px;
+                left: -3px;
+            }
+            .music-wrapper svg circle {
+                stroke-width: 2.5;
             }
             .ctrl-btn {
                 width: 42px;
@@ -387,19 +384,21 @@
                 height: 36px;
                 font-size: 15px;
             }
-            .card-stack-wrap { height: 68vh; }
+            .card-stack-wrap {
+                width: 88vw;
+                height: 52vh;
+            }
         }
     </style>
 </head>
 <body>
     <a href="../" class="back-home">←</a>
 
-    <!-- 右上角按钮组：音乐圆环 + 收回按钮 -->
     <div class="top-right-group">
         <div class="music-wrapper" id="musicWrapper">
             <svg>
-                <circle class="bg-circle" cx="32" cy="32" r="28" />
-                <circle class="fg-circle" cx="32" cy="32" r="28" />
+                <circle class="bg-circle" cx="28" cy="28" r="25" />
+                <circle class="fg-circle" cx="28" cy="28" r="25" />
             </svg>
             <div class="ctrl-btn" id="musicBtn" tabindex="0">🎵</div>
         </div>
@@ -642,12 +641,12 @@
         }
         init();
 
-        // ========== 音乐控制（进度圆环版） ==========
+        // ========== 音乐控制 ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         const musicWrapper = document.getElementById('musicWrapper');
         const fgCircle = document.querySelector('.fg-circle');
-        const circumference = 175.93;
+        const circumference = 2 * Math.PI * 25;
 
         let isPlaying = false;
         let isReady = false;
