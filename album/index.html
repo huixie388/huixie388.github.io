@@ -54,48 +54,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .music-wrapper {
-            position: relative;
-            width: 56px;
-            height: 56px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .music-wrapper svg {
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            width: 60px;
-            height: 60px;
-            transform: rotate(-90deg);
-        }
-        .music-wrapper svg circle {
-            fill: none;
-            stroke: var(--primary);
-            stroke-width: 3;
-            stroke-linecap: round;
-            stroke-dasharray: 163.36;
-            stroke-dashoffset: 163.36;
-            transition: stroke-dashoffset 0.3s ease, opacity 0.4s ease;
-        }
-        .music-wrapper svg circle.bg-circle {
-            stroke: rgba(66, 153, 225, 0.15);
-            stroke-dashoffset: 0;
-            opacity: 0;
-        }
-        .music-wrapper.show-progress svg circle.bg-circle {
-            opacity: 1;
-        }
-
+        /* 音乐按钮 */
         .ctrl-btn {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 56px;
-            height: 56px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -103,15 +68,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
             color: var(--primary);
             outline: none;
             font-family: "Inter", "微软雅黑", system-ui, sans-serif;
             font-weight: 600;
             transition: all 0.3s;
             user-select: none;
-            z-index: 2;
-            position: relative;
+            cursor: pointer;
         }
         .ctrl-btn:hover {
             transform: scale(1.08);
@@ -120,6 +84,7 @@
         }
         .ctrl-btn:active { transform: scale(0.92); }
 
+        /* 重置按钮 */
         .retract-btn {
             width: 44px;
             height: 44px;
@@ -131,12 +96,11 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
             color: var(--primary);
             outline: none;
             transition: all 0.3s;
             user-select: none;
-            flex-shrink: 0;
         }
         .retract-btn:hover {
             transform: scale(1.1);
@@ -144,6 +108,28 @@
             border-color: var(--primary);
         }
         .retract-btn:active { transform: scale(0.95); }
+
+        /* 长条进度条 */
+        .progress-bar-wrap {
+            width: 80px;
+            height: 4px;
+            background: rgba(66, 153, 225, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            margin-top: 2px;
+        }
+        .progress-bar-wrap.show {
+            opacity: 1;
+        }
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
 
         .back-home {
             position: fixed;
@@ -308,30 +294,21 @@
             .top-right-group {
                 top: 14px;
                 right: 14px;
-                gap: 10px;
-            }
-            .music-wrapper {
-                width: 48px;
-                height: 48px;
-            }
-            .music-wrapper svg {
-                width: 52px;
-                height: 52px;
-                top: -2px;
-                left: -2px;
-            }
-            .music-wrapper svg circle {
-                stroke-width: 2.5;
+                gap: 8px;
             }
             .ctrl-btn {
-                width: 48px;
-                height: 48px;
-                font-size: 19px;
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
             }
             .retract-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 17px;
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            .progress-bar-wrap {
+                width: 60px;
+                height: 3px;
             }
             .page-title { margin-bottom: 30px; }
             .card-stack-wrap {
@@ -354,30 +331,21 @@
             .top-right-group {
                 top: 12px;
                 right: 12px;
-                gap: 8px;
-            }
-            .music-wrapper {
-                width: 42px;
-                height: 42px;
-            }
-            .music-wrapper svg {
-                width: 46px;
-                height: 46px;
-                top: -2px;
-                left: -2px;
-            }
-            .music-wrapper svg circle {
-                stroke-width: 2.2;
+                gap: 6px;
             }
             .ctrl-btn {
-                width: 42px;
-                height: 42px;
-                font-size: 17px;
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
             }
             .retract-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 15px;
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+            .progress-bar-wrap {
+                width: 50px;
+                height: 3px;
             }
             .card-stack-wrap {
                 width: 85vw;
@@ -390,14 +358,11 @@
     <a href="../" class="back-home">←</a>
 
     <div class="top-right-group">
-        <div class="music-wrapper" id="musicWrapper">
-            <svg viewBox="0 0 60 60">
-                <circle class="bg-circle" cx="30" cy="30" r="26" />
-                <circle class="fg-circle" cx="30" cy="30" r="26" />
-            </svg>
-            <div class="ctrl-btn" id="musicBtn" tabindex="0">🎵</div>
-        </div>
+        <div class="ctrl-btn" id="musicBtn" tabindex="0">🎵</div>
         <div class="retract-btn" id="retractBtn" tabindex="0" title="收回全部照片">↩️</div>
+        <div class="progress-bar-wrap" id="progressWrap">
+            <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
     </div>
 
     <audio id="bgMusic" loop preload="auto" style="display:none;">
@@ -640,38 +605,36 @@
         }
         init();
 
-        // ========== 音乐控制（简洁可靠） ==========
+        // ========== 音乐控制 + 长条进度条 ==========
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
-        const musicWrapper = document.getElementById('musicWrapper');
-        const fgCircle = document.querySelector('.fg-circle');
-        const circumference = 2 * Math.PI * 26;
+        const progressWrap = document.getElementById('progressWrap');
+        const progressFill = document.getElementById('progressFill');
 
         let isPlaying = false;
         let isReady = false;
 
-        // 更新进度环
+        // 更新进度条
         function updateProgress(percent) {
-            const offset = circumference - (percent / 100) * circumference;
-            fgCircle.style.strokeDashoffset = offset;
-            musicWrapper.classList.add('show-progress');
+            progressFill.style.width = percent + '%';
+            progressWrap.classList.add('show');
             if (percent >= 100) {
                 setTimeout(() => {
-                    musicWrapper.classList.remove('show-progress');
+                    progressWrap.classList.remove('show');
                 }, 400);
+                isReady = true;
             }
         }
 
-        // 重置环（加载中状态）
+        // 重置进度条
         function resetProgress() {
-            fgCircle.style.strokeDashoffset = circumference;
-            musicWrapper.classList.add('show-progress');
+            progressFill.style.width = '0%';
+            progressWrap.classList.add('show');
         }
 
-        // 开始加载音频
+        // 开始加载
         bgMusic.load();
 
-        // 监听加载进度
         bgMusic.addEventListener('progress', function() {
             if (bgMusic.buffered.length > 0) {
                 const bufferedEnd = bgMusic.buffered.end(bgMusic.buffered.length - 1);
@@ -683,29 +646,23 @@
             }
         });
 
-        // 加载完成可播放
         bgMusic.addEventListener('canplaythrough', function() {
             isReady = true;
-            updateProgress(100); // 环满
-            // 如果之前没有播放，按钮显示为播放状态
+            updateProgress(100);
             if (!isPlaying) {
                 musicBtn.textContent = '🎵';
             }
         });
 
-        // 错误处理
         bgMusic.addEventListener('error', function() {
             musicBtn.textContent = '❌';
             musicBtn.style.color = '#ff4d4f';
-            musicWrapper.classList.remove('show-progress');
+            progressWrap.classList.remove('show');
         });
 
-        // 播放/暂停切换
         function toggleMusic() {
             if (!isReady) {
-                // 还没加载好，显示加载中
                 resetProgress();
-                // 如果还没开始加载，重新触发加载
                 if (bgMusic.readyState === 0) {
                     bgMusic.load();
                 }
@@ -721,20 +678,17 @@
                     musicBtn.textContent = '🔇';
                     isPlaying = true;
                 }).catch(() => {
-                    // 播放失败（比如自动播放被拦截），按钮不变，让用户再点一次
                     musicBtn.textContent = '🎵';
                 });
             }
         }
 
-        // 按钮事件
         musicBtn.addEventListener('click', toggleMusic);
         musicBtn.addEventListener('touchstart', function(e) {
             e.preventDefault();
             toggleMusic();
         }, { passive: false });
 
-        // 同步播放状态
         bgMusic.addEventListener('play', () => {
             isPlaying = true;
             musicBtn.textContent = '🔇';
@@ -744,7 +698,6 @@
             musicBtn.textContent = '🎵';
         });
 
-        // 首次点击页面任何地方尝试自动播放（仅一次）
         function firstInteraction() {
             if (isReady && !isPlaying) {
                 bgMusic.play().then(() => {
@@ -758,7 +711,6 @@
         document.addEventListener('click', firstInteraction, { once: true });
         document.addEventListener('touchstart', firstInteraction, { once: true, passive: true });
 
-        // 3秒后如果还未加载，强制触发加载（以防用户无交互）
         setTimeout(() => {
             if (!isReady && bgMusic.readyState === 0) {
                 bgMusic.load();
