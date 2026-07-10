@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>相册集 | 宸宇的website</title>
     <style>
-        /* ========== 全局样式（完全没变） ========== */
         :root {
             --primary: #4299e1;
             --primary-light: rgba(66, 153, 225, 0.15);
@@ -47,10 +46,8 @@
 
         #bgMusic { display: none; }
 
-        .music-control {
+        .ctrl-btn {
             position: fixed;
-            top: 20px;
-            right: 20px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -65,13 +62,32 @@
             font-size: 20px;
             color: var(--primary);
             outline: none;
+            font-family: "Inter", "微软雅黑", system-ui, sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            user-select: none;
         }
-        .music-control:hover {
+        .ctrl-btn:hover {
             transform: scale(1.1);
             box-shadow: var(--shadow-primary);
             border-color: var(--primary);
         }
-        .music-control:active { transform: scale(0.95); }
+        .ctrl-btn:active { transform: scale(0.95); }
+        .ctrl-btn.loading {
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+
+        .music-control {
+            top: 20px;
+            right: 20px;
+        }
+        .retract-btn {
+            bottom: 30px;
+            left: 20px;
+            font-size: 22px;
+        }
 
         .back-home {
             position: fixed;
@@ -166,6 +182,9 @@
             font-size: 13px;
             color: var(--text-secondary);
             letter-spacing: 0.5px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
         }
 
         .modal-overlay {
@@ -221,11 +240,16 @@
 
         @media (max-width: 768px) {
             body { padding: 30px 12px; }
-            .music-control, .back-home {
+            .ctrl-btn, .music-control, .back-home, .retract-btn {
                 width: 44px;
                 height: 44px;
                 font-size: 17px;
                 top: 14px;
+            }
+            .retract-btn {
+                bottom: 20px;
+                left: 14px;
+                font-size: 19px;
             }
             .page-title { margin-bottom: 30px; }
             .modal-overlay .close-btn {
@@ -235,12 +259,20 @@
                 height: 44px;
                 font-size: 24px;
             }
+            .footer-text {
+                bottom: 20px;
+                font-size: 12px;
+            }
+        }
+        @media (max-width: 375px) {
+            .ctrl-btn.loading { font-size: 11px; }
         }
     </style>
 </head>
 <body>
     <a href="../" class="back-home">←</a>
-    <div class="music-control" id="musicBtn" tabindex="0">🎵</div>
+    <div class="ctrl-btn music-control" id="musicBtn" tabindex="0">🎵</div>
+    <div class="ctrl-btn retract-btn" id="retractBtn" tabindex="0" title="收回全部照片">↩️</div>
 
     <audio id="bgMusic" loop preload="auto" style="display:none;">
         <source src="../music/BGM3.mp3" type="audio/mpeg">
@@ -249,7 +281,7 @@
 
     <div class="page-title">
         <h1>我的相册</h1>
-        <p>拖动抽出 · 点击放大 · 双击空白处收回</p>
+        <p>拖动抽出 · 点击放大 · 点击左下角收回</p>
     </div>
 
     <div class="card-stack-wrap" id="stackWrap"></div>
@@ -262,9 +294,6 @@
     </div>
 
     <script>
-        // ============================================================
-        // 1. 图片数据
-        // ============================================================
         const imageList = [
             { id: 'rx7FnGtc', url: 'https://s3.bmp.ovh/2026/06/16/rx7FnGtc.jpg', alt: '照片1' },
             { id: 'KyH1p6Jj', url: 'https://s3.bmp.ovh/2026/06/16/KyH1p6Jj.jpg', alt: '照片2' },
@@ -280,9 +309,6 @@
             { id: 'UJaeQlPn', url: 'https://s3.bmp.ovh/2026/06/16/UJaeQlPn.jpg', alt: '照片12' }
         ];
 
-        // ============================================================
-        // 2. 相册交互（完全没变）
-        // ============================================================
         const wrap = document.getElementById('stackWrap');
         let stackedCards = [];
         let freeCards = [];
@@ -303,7 +329,6 @@
             const img = document.createElement('img');
             img.src = data.url;
             img.alt = data.alt;
-            // 改：立即加载，不要懒加载
             img.loading = 'eager';
             img.decoding = 'async';
             card.appendChild(img);
@@ -442,9 +467,12 @@
             retractAllCards();
         });
 
-        // ============================================================
-        // 3. 模态框（没变）
-        // ============================================================
+        document.getElementById('retractBtn').addEventListener('click', retractAllCards);
+        document.getElementById('retractBtn').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            retractAllCards();
+        }, { passive: false });
+
         const modalOverlay = document.getElementById('modalOverlay');
         const modalImage = document.getElementById('modalImage');
         const modalCloseBtn = document.getElementById('modalCloseBtn');
@@ -468,9 +496,6 @@
             if (e.key === 'Escape') closeModal();
         });
 
-        // ============================================================
-        // 4. 初始化相册（并预加载所有图片）
-        // ============================================================
         function init() {
             const cards = imageList.map((data, idx) => createCard(data, idx));
             stackedCards = cards.slice();
@@ -478,53 +503,55 @@
             cards.forEach(card => wrap.appendChild(card));
             layoutStack();
 
-            // 【新增】预加载所有图片（将图片缓存到浏览器）
             imageList.forEach(data => {
                 const img = new Image();
                 img.src = data.url;
-                // 不操作DOM，只触发浏览器下载
             });
         }
         init();
 
-        // ============================================================
-        // 5. 【改过的】音乐 – 自动播放 + 不卡顿
-        // ============================================================
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
         let isReady = false;
 
-        // 一开始就强制下载歌曲
         bgMusic.load();
 
-        // 监听缓冲足够的事件
+        bgMusic.addEventListener('progress', function() {
+            if (bgMusic.buffered.length > 0) {
+                const bufferedEnd = bgMusic.buffered.end(bgMusic.buffered.length - 1);
+                const duration = bgMusic.duration;
+                if (duration > 0) {
+                    const percent = Math.round((bufferedEnd / duration) * 100);
+                    if (!isReady) {
+                        musicBtn.textContent = `⏳${percent}%`;
+                        musicBtn.classList.add('loading');
+                    }
+                }
+            }
+        });
+
         bgMusic.addEventListener('canplaythrough', function() {
             isReady = true;
-            if (musicBtn.textContent === '⏳') {
+            musicBtn.classList.remove('loading');
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicBtn.textContent = '🔇';
+            }).catch(() => {
                 musicBtn.textContent = '🎵';
-            }
+                isPlaying = false;
+            });
         });
 
         bgMusic.addEventListener('error', function() {
             musicBtn.textContent = '❌';
             musicBtn.style.color = '#ff4d4f';
+            musicBtn.classList.remove('loading');
         });
 
-        // 切换播放/暂停（手动点击按钮）
         function toggleMusic() {
             if (!isReady) {
                 musicBtn.textContent = '⏳';
-                // 等待准备好后自动播放
-                bgMusic.addEventListener('canplaythrough', function onReady() {
-                    bgMusic.removeEventListener('canplaythrough', onReady);
-                    if (!isPlaying) {
-                        bgMusic.play().catch(() => {});
-                        isPlaying = true;
-                        musicBtn.textContent = '🔇';
-                    }
-                    isReady = true;
-                });
                 return;
             }
 
@@ -533,22 +560,25 @@
                 musicBtn.textContent = '🎵';
                 isPlaying = false;
             } else {
-                bgMusic.play().catch(() => {
+                bgMusic.play().then(() => {
+                    musicBtn.textContent = '🔇';
+                    isPlaying = true;
+                }).catch(() => {
                     musicBtn.textContent = '⏳';
+                    bgMusic.load();
                 });
-                musicBtn.textContent = '🔇';
-                isPlaying = true;
             }
         }
 
-        // 同步按钮状态
         bgMusic.addEventListener('play', () => {
             isPlaying = true;
             musicBtn.textContent = '🔇';
+            musicBtn.classList.remove('loading');
         });
         bgMusic.addEventListener('pause', () => {
             isPlaying = false;
             musicBtn.textContent = '🎵';
+            musicBtn.classList.remove('loading');
         });
 
         musicBtn.addEventListener('click', toggleMusic);
@@ -557,34 +587,18 @@
             toggleMusic();
         }, { passive: false });
 
-        // 【核心改动】用户第一次点击页面任何地方 → 自动播放音乐（如果已缓冲好）
-        function firstClickPlay() {
-            if (isReady) {
+        function firstInteraction() {
+            if (isReady && !isPlaying) {
                 bgMusic.play().then(() => {
                     isPlaying = true;
                     musicBtn.textContent = '🔇';
-                }).catch(() => {
-                    // 浏览器拦截自动播放，没关系，用户再手动点按钮即可
-                });
-            } else {
-                // 还没准备好，显示加载，并等它准备好再自动播放
-                musicBtn.textContent = '⏳';
-                bgMusic.addEventListener('canplaythrough', function onReady() {
-                    bgMusic.removeEventListener('canplaythrough', onReady);
-                    bgMusic.play().catch(() => {});
-                    isPlaying = true;
-                    musicBtn.textContent = '🔇';
-                    isReady = true;
-                });
+                }).catch(() => {});
             }
-            // 移除监听，只触发一次
-            document.removeEventListener('click', firstClickPlay);
-            document.removeEventListener('touchstart', firstClickPlay);
+            document.removeEventListener('click', firstInteraction);
+            document.removeEventListener('touchstart', firstInteraction);
         }
-
-        // 监听首次用户交互（点击或触摸）
-        document.addEventListener('click', firstClickPlay, { once: true });
-        document.addEventListener('touchstart', firstClickPlay, { once: true, passive: true });
+        document.addEventListener('click', firstInteraction, { once: true });
+        document.addEventListener('touchstart', firstInteraction, { once: true, passive: true });
     </script>
 </body>
 </html>
